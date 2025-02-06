@@ -1,18 +1,26 @@
-import { NextRequest, NextResponse } from "next/server"
-import { validateUser } from "@/lib/auth"
+import { type NextRequest, NextResponse } from "next/server";
+import { validateUser } from "@/lib/auth";
 
-export async function POST(
-  request: NextRequest
-): Promise<NextResponse> {
+export const dynamic = 'force-dynamic';
+
+export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
-    const body = await request.json()
+    // Ensure we have a valid request object
+    if (!request || !request.json) {
+      return NextResponse.json(
+        { error: "Invalid request" },
+        { status: 400 }
+      );
+    }
+
+    const body = await request.json();
 
     // Validate request body
     if (!body || typeof body !== 'object') {
       return NextResponse.json(
         { error: "Invalid request body" },
         { status: 400 }
-      )
+      );
     }
 
     // Validate required fields
@@ -22,24 +30,27 @@ export async function POST(
       return NextResponse.json(
         { error: "Email and password are required" },
         { status: 400 }
-      )
+      );
     }
 
-    const result = await validateUser(body)
+    const result = await validateUser({
+      email: body.email,
+      password: body.password
+    });
 
     if (result.error) {
       return NextResponse.json(
         { error: result.error },
         { status: 401 }
-      )
+      );
     }
 
-    return NextResponse.json(result)
+    return NextResponse.json(result);
   } catch (err) {
-    console.error('Login error:', err)
+    console.error('Login error:', err);
     return NextResponse.json(
       { error: "An error occurred during login" },
       { status: 500 }
-    )
+    );
   }
 }
