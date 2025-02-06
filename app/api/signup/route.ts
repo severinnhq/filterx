@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { connectToDatabase } from "@/lib/mongodb"
 import bcrypt from "bcryptjs"
 import { z } from "zod"
+import { MongoConnection, UserDocument } from "@/types/mongodb"
 
 const userSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -20,14 +21,14 @@ export async function POST(req: Request) {
       setTimeout(() => reject(new Error('Database connection timeout')), 4000)
     })
 
-    const { db } = await Promise.race([dbPromise, timeoutPromise]) as { db: any }
+    const { db } = await Promise.race([dbPromise, timeoutPromise]) as MongoConnection
     
     const body = await req.json()
     const validatedData = userSchema.parse(body)
     const { email, password } = validatedData
     
     // Check if user exists with timeout
-    const existingUser = await db.collection("users").findOne({ email })
+    const existingUser = await db.collection<UserDocument>("users").findOne({ email })
     if (existingUser) {
       return NextResponse.json(
         { error: "Email already registered" },
@@ -39,12 +40,12 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 10)
     
     // Create user
-    await db.collection("users").insertOne({
+    await db.collection<UserDocument>("users").insertOne({
       email,
       password: hashedPassword,
       status: "free",
       createdAt: new Date(),
-    })
+    } as UserDocument)
     
     return NextResponse.json(
       { message: "Account created successfully" },

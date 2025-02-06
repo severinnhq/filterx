@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/mongodb"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { z } from "zod"
+import { MongoConnection, UserDocument } from "@/types/mongodb"
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -21,14 +22,14 @@ export async function POST(req: Request) {
       setTimeout(() => reject(new Error('Database connection timeout')), 4000)
     })
 
-    const { db } = await Promise.race([dbPromise, timeoutPromise]) as { db: any }
+    const { db } = await Promise.race([dbPromise, timeoutPromise]) as MongoConnection
     
     const body = await req.json()
     const validatedData = loginSchema.parse(body)
     const { email, password } = validatedData
     
     // Find user with timeout
-    const user = await db.collection("users").findOne({ email })
+    const user = await db.collection<UserDocument>("users").findOne({ email })
     if (!user) {
       return NextResponse.json(
         { error: "Invalid credentials" },
