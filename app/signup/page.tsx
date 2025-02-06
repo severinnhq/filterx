@@ -1,9 +1,10 @@
+// Signup Page (page.tsx)
 "use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Home } from "lucide-react"  // Import the Lucide Home icon
+import { Home } from "lucide-react"
 
 export default function Signup() {
   const [email, setEmail] = useState("")
@@ -24,7 +25,15 @@ export default function Signup() {
         body: JSON.stringify({ email, password }),
       })
 
-      const data = await response.json()
+      let data
+      const contentType = response.headers.get("content-type")
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json()
+      } else {
+        // Handle non-JSON response
+        const textResponse = await response.text()
+        throw new Error(textResponse || "An unexpected error occurred")
+      }
 
       if (!response.ok) {
         throw new Error(data.error || "Signup failed")
@@ -37,7 +46,14 @@ export default function Signup() {
         body: JSON.stringify({ email, password }),
       })
 
-      const loginData = await loginResponse.json()
+      let loginData
+      const loginContentType = loginResponse.headers.get("content-type")
+      if (loginContentType && loginContentType.includes("application/json")) {
+        loginData = await loginResponse.json()
+      } else {
+        const textResponse = await loginResponse.text()
+        throw new Error(textResponse || "Login after signup failed")
+      }
 
       if (loginResponse.ok) {
         localStorage.setItem("token", loginData.token)
