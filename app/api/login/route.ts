@@ -8,13 +8,8 @@ interface LoginBody {
 }
 
 export async function POST(request: NextRequest) {
-  // Try getting the Content-Type header using both common capitalizations.
-  const headerContentType =
-    request.headers.get("Content-Type") ||
-    request.headers.get("content-type") ||
-    "";
-  // Ensure we have a string value.
-  const contentType = typeof headerContentType === "string" ? headerContentType : "";
+  // Safely get the Content-Type header (using optional chaining) and force it to a string.
+  const contentType = String(request.headers?.get("Content-Type") ?? "");
 
   // (Optional) Log the Content-Type to help debug in your environment.
   console.log("Content-Type header:", contentType);
