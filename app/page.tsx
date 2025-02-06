@@ -144,10 +144,10 @@ export default function Home() {
                   <h4 className="text-xl font-semibold mb-4">v0.1 Filtered Words</h4>
                   <div className="grid grid-cols-2 gap-4 mb-6">
                     <div className="bg-gray-100 p-3 rounded">
-                      <p className="font-medium">Let's connect</p>
+                      <p className="font-medium">Let&aposs connect</p>
                     </div>
                     <div className="bg-gray-100 p-3 rounded">
-                      <p className="font-medium">Let's Connect</p>
+                      <p className="font-medium">Let&aposs Connect</p>
                     </div>
                     <div className="bg-gray-100 p-3 rounded">
                       <p className="font-medium">Lets connect</p>
@@ -159,7 +159,7 @@ export default function Home() {
                   <div className="mt-6">
                     <h5 className="text-lg font-semibold mb-2">Creative Alternative</h5>
                     <div className="bg-blue-100 p-4 rounded-lg text-center">
-                      <p className="text-xl font-bold text-blue-600">🤝 Let's Collaborate!</p>
+                      <p className="text-xl font-bold text-blue-600">🤝 Let&aposs Collaborate!</p>
                       <p className="text-sm text-blue-500 mt-2">
                         Building meaningful connections, one interaction at a time.
                       </p>
