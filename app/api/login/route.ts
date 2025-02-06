@@ -8,30 +8,34 @@ interface LoginBody {
 }
 
 export async function POST(request: NextRequest) {
-  // Ensure we have a headers object.
-  const headers = request.headers || new Headers();
-  // Safely get the content-type header (default to empty string if not present)
-  const contentType = headers.get("content-type") ?? "";
+  // Try getting the Content-Type header using both common capitalizations.
+  const headerContentType =
+    request.headers.get("Content-Type") ||
+    request.headers.get("content-type") ||
+    "";
+  // Ensure we have a string value.
+  const contentType = typeof headerContentType === "string" ? headerContentType : "";
+
+  // (Optional) Log the Content-Type to help debug in your environment.
+  console.log("Content-Type header:", contentType);
 
   let body: LoginBody;
-
-  // Check if the content type indicates JSON
-  if (contentType.startsWith("application/json")) {
-    body = await request.json();
-  } else {
-    // Fallback: try to parse the body as text then JSON.
-    try {
+  try {
+    if (contentType.startsWith("application/json")) {
+      body = await request.json();
+    } else {
+      // Fallback: try to parse the request body as text then JSON.
       const text = await request.text();
-      body = JSON.parse(text) as LoginBody;
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid or missing JSON body" },
-        { status: 400 }
-      );
+      body = JSON.parse(text);
     }
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Invalid or missing JSON body" },
+      { status: 400 }
+    );
   }
 
-  // Validate that both email and password are provided
+  // Validate that both email and password are provided.
   if (!body.email || !body.password) {
     return NextResponse.json(
       { error: "Email and password are required" },
