@@ -2,11 +2,20 @@ import { type NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { verifyToken } from "@/lib/auth";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia",
+// Use the correct API version
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', {
+  apiVersion: "2024-12-18.acacia" as const
 });
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  // Validate stripe key
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json(
+      { error: "Stripe key not configured" },
+      { status: 500 }
+    );
+  }
+
   try {
     // Validate request body
     const body = await req.json();
@@ -21,7 +30,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     // Safely extract the authorization header
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader || typeof authHeader !== 'string') {
+    if (!authHeader) {
       return NextResponse.json(
         { error: "Authentication required" },
         { status: 401 }
@@ -29,15 +38,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     }
 
     // Safely extract the token
-    const parts = authHeader.split(' ');
-    if (parts.length !== 2 || parts[0] !== 'Bearer') {
-      return NextResponse.json(
-        { error: "Invalid authorization format" },
-        { status: 401 }
-      );
-    }
-
-    const token = parts[1];
+    const token = authHeader.replace('Bearer ', '');
     const userId = verifyToken(token);
     if (!userId) {
       return NextResponse.json(
@@ -59,9 +60,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Validate environment variables
-    if (!process.env.NEXT_PUBLIC_URL) {
-      throw new Error("NEXT_PUBLIC_URL environment variable is not set");
+    // Ensure environment variable exists
+    const baseUrl = process.env.NEXT_PUBLIC_URL;
+    if (!baseUrl) {
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -73,23 +78,19 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             product_data: {
               name: plan === "extension" ? "FilterX Extension" : "FilterX Complete Bundle",
             },
-            unit_amount: price * 100, // Stripe expects the amount in cents
+            unit_amount: price * 100,
           },
           quantity: 1,
         },
       ],
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/`,
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/`,
       client_reference_id: userId,
       metadata: {
         plan,
       },
     });
-
-    if (!session.url) {
-      throw new Error("Failed to create Stripe checkout session");
-    }
 
     return NextResponse.json({ url: session.url });
   } catch (err) {
