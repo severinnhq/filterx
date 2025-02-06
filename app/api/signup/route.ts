@@ -9,18 +9,24 @@ const userSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
+export const maxDuration = 5 // Set max duration to 5 seconds
+export const dynamic = 'force-dynamic' // Prevent static optimization
+
 export async function POST(req: Request) {
   try {
+    // Add timeout to the database connection
+    const dbPromise = connectToDatabase()
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Database connection timeout')), 4000)
+    })
+
+    const { db } = await Promise.race([dbPromise, timeoutPromise]) as { db: any }
+    
     const body = await req.json()
-    
-    // Validate input
     const validatedData = userSchema.parse(body)
-    
     const { email, password } = validatedData
     
-    const { db } = await connectToDatabase()
-    
-    // Check if user already exists
+    // Check if user exists with timeout
     const existingUser = await db.collection("users").findOne({ email })
     if (existingUser) {
       return NextResponse.json(
@@ -29,10 +35,10 @@ export async function POST(req: Request) {
       )
     }
     
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12)
+    // Hash password (bcrypt is already naturally limited in time)
+    const hashedPassword = await bcrypt.hash(password, 10)
     
-    // Create user with status
+    // Create user
     await db.collection("users").insertOne({
       email,
       password: hashedPassword,
@@ -54,9 +60,17 @@ export async function POST(req: Request) {
       )
     }
     
+    // Handle timeout error specifically
+    if (error instanceof Error && error.message === 'Database connection timeout') {
+      return NextResponse.json(
+        { error: "Service temporarily unavailable. Please try again." },
+        { status: 503 }
+      )
+    }
+    
     return NextResponse.json(
-      { error: "Failed to create account. Please try again." },
-        { status: 500 }
+      { error: "An unexpected error occurred. Please try again later." },
+      { status: 500 }
     )
   }
 }

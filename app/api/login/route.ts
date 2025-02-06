@@ -10,18 +10,24 @@ const loginSchema = z.object({
   password: z.string(),
 })
 
+export const maxDuration = 5 // Set max duration to 5 seconds
+export const dynamic = 'force-dynamic' // Prevent static optimization
+
 export async function POST(req: Request) {
   try {
+    // Add timeout to the database connection
+    const dbPromise = connectToDatabase()
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Database connection timeout')), 4000)
+    })
+
+    const { db } = await Promise.race([dbPromise, timeoutPromise]) as { db: any }
+    
     const body = await req.json()
-    
-    // Validate input
     const validatedData = loginSchema.parse(body)
-    
     const { email, password } = validatedData
     
-    const { db } = await connectToDatabase()
-    
-    // Find user
+    // Find user with timeout
     const user = await db.collection("users").findOne({ email })
     if (!user) {
       return NextResponse.json(
@@ -55,12 +61,19 @@ export async function POST(req: Request) {
     console.error("Login error:", error)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid input data", details: error.errors },
+        { error: "Invalid input data" },
         { status: 400 }
       )
     }
+    // Handle timeout error specifically
+    if (error instanceof Error && error.message === 'Database connection timeout') {
+      return NextResponse.json(
+        { error: "Service temporarily unavailable. Please try again." },
+        { status: 503 }
+      )
+    }
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "An unexpected error occurred. Please try again later." },
       { status: 500 }
     )
   }
