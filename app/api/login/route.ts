@@ -1,3 +1,4 @@
+// app/api/login/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import { validateUser } from "@/lib/auth";
 
@@ -7,13 +8,18 @@ interface LoginBody {
 }
 
 export async function POST(request: NextRequest) {
-  let body: LoginBody | undefined;
-  const contentType = request.headers.get("content-type") || "";
+  // Ensure we have a headers object.
+  const headers = request.headers || new Headers();
+  // Safely get the content-type header (default to empty string if not present)
+  const contentType = headers.get("content-type") ?? "";
 
+  let body: LoginBody;
+
+  // Check if the content type indicates JSON
   if (contentType.startsWith("application/json")) {
-    body = (await request.json()) as LoginBody;
+    body = await request.json();
   } else {
-    // If there's no content-type or it's not JSON, try parsing manually.
+    // Fallback: try to parse the body as text then JSON.
     try {
       const text = await request.text();
       body = JSON.parse(text) as LoginBody;
@@ -25,7 +31,8 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if (!body || !body.email || !body.password) {
+  // Validate that both email and password are provided
+  if (!body.email || !body.password) {
     return NextResponse.json(
       { error: "Email and password are required" },
       { status: 400 }
