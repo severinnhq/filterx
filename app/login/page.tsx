@@ -1,9 +1,9 @@
-// app/login/page.tsx
 "use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { Home } from "lucide-react"  // Import the Lucide Home icon
 
 export default function Login() {
   const [email, setEmail] = useState("")
@@ -41,7 +41,13 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold mb-8">Login</h1>
+      <h1 className="text-4xl font-bold mb-8 flex items-center">
+        {/* Link wrapping the House icon */}
+        <Link href="/">
+          <Home size={32} className="text-gray-800 mr-2 cursor-pointer" />
+        </Link>
+        Login
+      </h1>
       <form onSubmit={handleSubmit} className="w-full max-w-xs">
         {error && (
           <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">

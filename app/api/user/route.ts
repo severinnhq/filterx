@@ -15,6 +15,7 @@ export async function GET(request: Request) {
     
     return NextResponse.json({ user: { status: user?.status || "not_paid" } });
   } catch (err) {
+    console.error(err); // Log the error if needed
     return NextResponse.json({ error: "Invalid token" }, { status: 401 });
   }
 }

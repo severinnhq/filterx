@@ -54,7 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     let price: number;
     let productName: string;
-    let productDescription: string;
+    let productDescription: string; // Change `const` to `let`
 
     if (plan === "extension") {
       price = 299; // $2.99
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Updated features section with your new text
     const formattedFeatures = `Filter out tweets that do not serve your growth.`;
 
-    productDescription = `${formattedFeatures}`;
+    productDescription = `${formattedFeatures}`; // Assign value to `const`
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],

@@ -1,3 +1,4 @@
+// header.tsx
 "use client"
 
 import Link from "next/link"
@@ -7,7 +8,11 @@ import { Button } from "@/components/ui/button"
 import { Menu, X, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-export default function Header() {
+interface HeaderProps {
+  userStatus?: string | null;
+}
+
+export default function Header({ userStatus }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userEmail, setUserEmail] = useState("")
@@ -52,18 +57,18 @@ export default function Header() {
           <nav className="hidden md:block">
             <ul className="flex space-x-4">
               <li>
-                <Link href="#features" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Features
+                <Link href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  How it works?
                 </Link>
               </li>
               <li>
-                <Link href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Pricing
+                <Link href="#pricing-section" className="text-gray-600 hover:text-gray-900 transition-colors">
+                Pricing
                 </Link>
               </li>
               <li>
-                <Link href="#contact" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Contact
+                <Link href="#faq" className="text-gray-600 hover:text-gray-900 transition-colors">
+                  FAQ
                 </Link>
               </li>
             </ul>
@@ -94,22 +99,22 @@ export default function Header() {
         <div className="md:hidden bg-white">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <Link
-              href="#features"
+              href="#how-it-works"
               className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Features
+              How it works?
             </Link>
             <Link
-              href="#pricing"
+              href="#pricing-section"
               className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
               Pricing
             </Link>
             <Link
-              href="#contact"
+              href="#faq"
               className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Contact
+              FAQ
             </Link>
             <div className="pt-4 space-y-2">
               {isLoggedIn ? (

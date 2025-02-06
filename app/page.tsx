@@ -1,13 +1,19 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Header from "../components/header"
 import { Button } from "@/components/ui/button"
-import { Check, Play, Clock } from "lucide-react" // Removed unused icons
+import { Check, Clock } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import PreorderSection from "@/components/preorder-section"
 import TweetDemo from "../components/TweetDemo"
+
+interface PurchaseIntent {
+  plan: string;
+  features: string[];
+}
 
 const ComingSoonOverlay = () => (
   <div
@@ -19,6 +25,7 @@ const ComingSoonOverlay = () => (
     </div>
   </div>
 )
+
 export default function Home() {
   const [isClient, setIsClient] = useState(false)
   const [userStatus, setUserStatus] = useState<string | null>(null)
@@ -44,15 +51,11 @@ export default function Home() {
     }
   }, [])
 
-  
-
   const handlePurchaseWithFeatures = async (plan: string, features: string[]) => {
     const token = localStorage.getItem("token")
     
-    // If no token, redirect to login first
     if (!token) {
-      // Store purchase intent in localStorage
-      localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features }))
+      localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features } as PurchaseIntent))
       router.push("/login")
       return
     }
@@ -62,21 +65,17 @@ export default function Home() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Make sure token is properly formatted
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ 
-          plan,
-          features,
-        }),
+        body: JSON.stringify({ plan, features }),
       })
   
       const data = await response.json()
   
       if (!response.ok) {
-        // If token is invalid, clear it and redirect to login
         if (data.error === "Invalid token") {
           localStorage.removeItem("token")
-          localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features }))
+          localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features } as PurchaseIntent))
           router.push("/login")
           return
         }
@@ -88,13 +87,12 @@ export default function Home() {
       } else {
         throw new Error("Invalid response from server")
       }
-    } catch (error: unknown) {
+    } catch (error) {
       console.error("Error:", error)
       const message = error instanceof Error ? error.message : "An unknown error occurred"
       alert(`An error occurred: ${message}. Please try again later.`)
     }
   }
-  
 
   const extensionFeatures = [
     "Browser Extension Support",
@@ -112,106 +110,107 @@ export default function Home() {
   ]
 
 
+
   if (!isClient) {
     return null
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
-    <Header />
+      <Header userStatus={userStatus} />
 
-    <main className="flex-grow font-sora">
-      {/* Hero Section */}
-      <section className="bg-white flex flex-col justify-between min-h-screen">
-  <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-0 flex flex-col lg:flex-row items-center justify-between flex-grow">
-    <div className="lg:w-1/2 w-full max-w-[550px] mx-auto lg:mx-0 text-center lg:text-left mb-8 lg:mb-0">
-      <div className="w-full">
-        <h1 className="font-extrabold mb-6 text-gray-900 tracking-tight leading-tight">
-          <span className="block text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[2.75rem]">
-            Focus on your growth,
-          </span>
-          <span className="block text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[2.75rem]">
-            filter out all these
-          </span>
-          <span className="block text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[2.75rem]">
-            kinda shi...
-          </span>
-        </h1>
-        <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-gray-700 mt-6 sm:mt-8 lg:mt-0">
-          Hide worthless tweets based on keywords
-          <br />
-          or your mood / thoughts.
-        </p>
-        <Button
-          size="lg"
-          className="bg-blue-600 text-white text-lg py-6 px-8 rounded-lg hover:bg-blue-700 transition-colors"
-          onClick={() => handlePurchaseWithFeatures("bundle", bundleFeatures)}
-        >
-          Get FilterX
-        </Button>
-      </div>
-    </div>
-    <div className="lg:w-1/2 w-full max-w-[500px] lg:max-w-[450px] mx-auto mt-6 lg:mt-0">
-      <TweetDemo />
-    </div>
-  </div>
-</section>
+      <main className="flex-grow font-sora">
+        {/* Hero Section */}
+        <section className="bg-white flex flex-col justify-between min-h-screen">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-0 flex flex-col lg:flex-row items-center justify-between flex-grow">
+            <div className="lg:w-1/2 w-full max-w-[550px] mx-auto lg:mx-0 text-center lg:text-left mb-8 lg:mb-0">
+              <div className="w-full">
+                <h1 className="font-extrabold mb-6 text-gray-900 tracking-tight leading-tight">
+                  <span className="block text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[2.75rem]">
+                    Focus on your growth,
+                  </span>
+                  <span className="block text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[2.75rem]">
+                    filter out all these
+                  </span>
+                  <span className="block text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[2.75rem]">
+                    kinda shi...
+                  </span>
+                </h1>
+                <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-gray-700 mt-6 sm:mt-8 lg:mt-0">
+                  Hide worthless tweets based on keywords
+                  <br />
+                  or your mood / thoughts.
+                </p>
+                <Button
+                  size="lg"
+                  className="bg-blue-600 text-white text-lg py-6 px-8 rounded-lg hover:bg-blue-700 transition-colors"
+                  onClick={() => handlePurchaseWithFeatures("bundle", bundleFeatures)}
+                >
+                  Get FilterX
+                </Button>
+              </div>
+            </div>
+            <div className="lg:w-1/2 w-full max-w-[500px] lg:max-w-[450px] mx-auto mt-6 lg:mt-0">
+              <TweetDemo />
+            </div>
+          </div>
+        </section>
 
+        {/* How It Works Section */}
+        <section id="how-it-works" className="py-32 bg-gray-50">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-4xl md:text-5xl font-bold text-center mb-16">How FilterX Works</h2>
+            <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+              {/* YouTube Video */}
+              <div className="lg:w-1/2 w-full">
+                <div className="relative aspect-video rounded-xl overflow-hidden shadow-xl">
+                  <iframe 
+                    src="https://www.youtube.com/embed/OwKGaUkfCOk"
+                    className="w-full h-full"
+                    style={{ minHeight: "400px" }}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    title="How FilterX Works Video"
+                  ></iframe>
+                </div>
+              </div>
 
-
-       {/* How It Works Section */}
-<section className="py-20 bg-gray-50">
-  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">How do FilterX Works</h2>
-    <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-      {/* YouTube Video */}
-      <div className="lg:w-1/2 w-full">
-        <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg">
-          <iframe 
-            src="https://www.youtube.com/embed/OwKGaUkfCOk"
-            className="w-full h-full"
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            title="How FilterX Works Video"
-          ></iframe>
-        </div>
-      </div>
-
-      {/* HowWorks Image */}
-      <div className="lg:w-1/2 w-full">
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <img 
-            src="/howworks.png" 
-            alt="How FilterX Works" 
-            className="w-full h-auto object-cover"
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
+              {/* HowWorks Image */}
+              <div className="lg:w-1/2 w-full">
+                <div className="bg-white rounded-xl shadow-xl overflow-hidden">
+                  <img 
+                    src="/howworks.png" 
+                    alt="How FilterX Works" 
+                    className="w-full h-auto object-cover"
+                    style={{ minHeight: "400px" }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Pricing or Download Section */}
         {userStatus === "preorder" ? (
-  <PreorderSection />
-) : userStatus === "basic" ? (
-  <section className="py-20 bg-white">
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-      <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Download FilterX Extension</h2>
-      <div className="flex justify-center">
-        <Button
-          onClick={() => window.open("https://chrome.google.com/webstore/detail/filterx/your-extension-id", "_blank")}
-          className="bg-blue-600 text-white"
-          size="lg"
-        >
-          Download Extension
-        </Button>
-      </div>
-    </div>
-  </section>
-        ) : (
+          <PreorderSection />
+        ) : userStatus === "basic" ? (
           <section className="py-20 bg-white">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Download FilterX Extension</h2>
+              <div className="flex justify-center">
+                <Button
+                  onClick={() => window.open("https://chrome.google.com/webstore/detail/filterx/your-extension-id", "_blank")}
+                  className="bg-blue-600 text-white"
+                  size="lg"
+                >
+                  Download Extension
+                </Button>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section  id="pricing-section" className="py-20 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Launch Discount</h2>
         
@@ -436,7 +435,7 @@ export default function Home() {
         )}
 
         {/* FAQ Section */}
-        <section className="py-20 bg-white-50">
+        <section id="faq" className="py-40 bg-white-50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Frequently Asked Questions</h2>
             <div className="max-w-3xl mx-auto">
@@ -473,8 +472,36 @@ export default function Home() {
       </main>
 
       <footer className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <p>&copy; 2023 FilterX. All rights reserved.</p>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Navigation Links */}
+          <div className="flex justify-center space-x-6">
+            <Link href="#how-it-works" className="text-gray-400 hover:text-white transition-colors">
+              How it works?
+            </Link>
+            {/* Show FilterX instead of Pricing for paid users */}
+            {userStatus === "basic" || userStatus === "preorder" ? (
+              <Link href="/filterx" className="text-gray-400 hover:text-white transition-colors">
+                FilterX
+              </Link>
+            ) : (
+              <Link href="#pricing-section" className="text-gray-400 hover:text-white transition-colors">
+                Pricing
+              </Link>
+            )}
+            <Link href="#faq" className="text-gray-400 hover:text-white transition-colors">
+              FAQ
+            </Link>
+            <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
+              Terms of Service
+            </Link>
+          </div>
+          {/* Copyright Notice */}
+          <div className="mt-6 text-center">
+            <p>&copy; 2025 FilterX. All rights reserved.</p>
+          </div>
         </div>
       </footer>
     </div>
