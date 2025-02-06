@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "FilterX",
+  "version": "1.2",
+  "description": "Filters out tweets containing specific phrases",
+  "icons": {
+    "128": "./logo.png"
+  },
+  "action": {
+    "default_popup": "./popup/index.html",
+    "default_icon": "./logo.png"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "host_permissions": [
+    "https://twitter.com/*", 
+    "https://x.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://twitter.com/*", "https://x.com/*"],
+      "js": ["./content.js"],
+      "run_at": "document_start"
+    }
+  ]
+}

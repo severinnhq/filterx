@@ -1,8 +1,19 @@
-import "./globals.css"
+import { Inter, Sora } from "next/font/google"
 import localFont from "next/font/local"
-import { Sora } from "next/font/google"
 
-const geist = localFont({
+export const sora = Sora({
+  subsets: ["latin"],
+  variable: "--font-sora",
+})
+
+// Use Inter as a fallback for Geist
+export const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+})
+
+// Load Geist as a local font
+export const geist = localFont({
   src: [
     {
       path: "../public/fonts/Geist-Regular.woff2",
@@ -27,21 +38,4 @@ const geist = localFont({
   ],
   variable: "--font-geist",
 })
-
-const sora = Sora({
-  subsets: ["latin"],
-  variable: "--font-sora",
-})
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html lang="en" className={`${geist.variable} ${sora.variable}`}>
-      <body>{children}</body>
-    </html>
-  )
-}
 
