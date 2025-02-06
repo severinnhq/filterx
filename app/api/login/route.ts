@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       const text = await request.text();
       body = JSON.parse(text);
     }
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { error: "Invalid or missing JSON body" },
       { status: 400 }
