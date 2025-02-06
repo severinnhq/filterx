@@ -1,57 +1,67 @@
 // app/api/login/route.ts
-import { NextResponse, NextRequest } from "next/server";
-import { validateUser } from "@/lib/auth";
+import { NextResponse } from "next/server"
+import { connectToDatabase } from "@/lib/mongodb"
+import bcrypt from "bcryptjs"
+import jwt from "jsonwebtoken"
+import { z } from "zod"
 
-export const dynamic = 'force-dynamic'; // Add this line
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+})
 
-interface LoginBody {
-  email: string;
-  password: string;
-}
-
-export async function POST(request: NextRequest) {
-  // Safely get and normalize Content-Type
-  const contentType = String(request.headers?.get("content-type")?.toLowerCase() ?? "");
-
-  let body: LoginBody;
+export async function POST(req: Request) {
   try {
-    if (contentType.startsWith("application/json")) {
-      body = await request.json();
-    } else {
-      const text = await request.text();
-      body = JSON.parse(text);
+    const body = await req.json()
+    
+    // Validate input
+    const validatedData = loginSchema.parse(body)
+    
+    const { email, password } = validatedData
+    
+    const { db } = await connectToDatabase()
+    
+    // Find user
+    const user = await db.collection("users").findOne({ email })
+    if (!user) {
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      )
     }
-  } catch {
-    return NextResponse.json(
-      { error: "Invalid or missing JSON body" },
-      { status: 400 }
-    );
-  }
-
-  // Validate that both email and password are provided.
-  if (!body.email || !body.password) {
-    return NextResponse.json(
-      { error: "Email and password are required" },
-      { status: 400 }
-    );
-  }
-
-  try {
-    const result = await validateUser({
-      email: body.email,
-      password: body.password,
-    });
-
-    if (result.error) {
-      return NextResponse.json({ error: result.error }, { status: 401 });
+    
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password)
+    if (!isValidPassword) {
+      return NextResponse.json(
+        { error: "Invalid credentials" },
+        { status: 401 }
+      )
     }
-
-    return NextResponse.json(result);
-  } catch (err) {
-    console.error("Login error:", err);
+    
+    // Generate JWT
+    const token = jwt.sign(
+      { 
+        userId: user._id.toString(),
+        email: user.email,
+        status: user.status
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: "7d" }
+    )
+    
+    return NextResponse.json({ token })
+  } catch (error) {
+    console.error("Login error:", error)
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid input data", details: error.errors },
+        { status: 400 }
+      )
+    }
     return NextResponse.json(
-      { error: "An error occurred during login" },
+      { error: "Internal server error" },
       { status: 500 }
-    );
+    )
   }
 }

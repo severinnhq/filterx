@@ -1,68 +1,60 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createUser } from "@/lib/auth";
+// app/api/signup/route.ts
+import { NextResponse } from "next/server"
+import { connectToDatabase } from "@/lib/mongodb"
+import bcrypt from "bcryptjs"
+import { z } from "zod"
 
-// Define an interface for the expected request body
-interface SignupBody {
-  email: string;
-  password: string;
-}
+const userSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+})
 
-export async function POST(req: NextRequest) {
-  const contentType = req.headers.get("Content-Type") ?? "";
-
-  let body: SignupBody;
-
+export async function POST(req: Request) {
   try {
-    if (contentType.startsWith("application/json")) {
-      body = await req.json();
-    } else {
-      const text = await req.text();
-      body = JSON.parse(text);
+    const body = await req.json()
+    
+    // Validate input
+    const validatedData = userSchema.parse(body)
+    
+    const { email, password } = validatedData
+    
+    const { db } = await connectToDatabase()
+    
+    // Check if user already exists
+    const existingUser = await db.collection("users").findOne({ email })
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "User already exists" },
+        { status: 400 }
+      )
     }
-  } catch {
+    
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12)
+    
+    // Create user
+    const result = await db.collection("users").insertOne({
+      email,
+      password: hashedPassword,
+      status: "free", // or whatever default status you want
+      createdAt: new Date(),
+    })
+    
     return NextResponse.json(
-      { error: "Invalid or missing JSON body" },
-      { status: 400 }
-    );
-  }
-
-  // Validate required fields
-  if (!body.email || !body.password) {
-    return NextResponse.json(
-      { error: "Email and password are required" },
-      { status: 400 }
-    );
-  }
-
-  // Validate email format
-  if (typeof body.email !== "string" || !body.email.includes("@")) {
-    return NextResponse.json(
-      { error: "Invalid email format" },
-      { status: 400 }
-    );
-  }
-
-  // Validate password length
-  if (typeof body.password !== "string" || body.password.length < 6) {
-    return NextResponse.json(
-      { error: "Password must be at least 6 characters long" },
-      { status: 400 }
-    );
-  }
-
-  try {
-    const result = await createUser(body);
-
-    if (result.error) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
-
-    return NextResponse.json(result, { status: 201 });
+      { message: "User created successfully" },
+      { status: 201 }
+    )
   } catch (error) {
-    console.error("Signup error:", error);
+    console.error("Signup error:", error)
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid input data", details: error.errors },
+        { status: 400 }
+      )
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
-    );
+    )
   }
 }
