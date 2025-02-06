@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     const hashedPassword = await bcrypt.hash(password, 12)
     
     // Create user
-    const result = await db.collection("users").insertOne({
+    await db.collection("users").insertOne({
       email,
       password: hashedPassword,
       status: "free", // or whatever default status you want
