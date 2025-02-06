@@ -54,7 +54,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     let price: number;
     let productName: string;
-    let productDescription: string; // Change `const` to `let`
+    const productDescription: string = "Filter out tweets that do not serve your growth.";
 
     if (plan === "extension") {
       price = 299; // $2.99
@@ -71,14 +71,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
 
-    // Updated features section with your new text
-    const formattedFeatures = `Filter out tweets that do not serve your growth.`;
-
-    productDescription = `${formattedFeatures}`; // Assign value to `const`
-
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
-      billing_address_collection: 'required',  // Billing address instead of shipping
+      billing_address_collection: 'required',
       line_items: [
         {
           price_data: {
@@ -106,7 +101,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       },
       custom_text: {
         submit: {
-          message: 'By completing this purchase, you agree to our terms of service and privacy policy.',
+          message: "By completing this purchase, you agree to our terms of service and privacy policy.",
         },
       },
       phone_number_collection: {

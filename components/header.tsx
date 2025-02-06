@@ -1,4 +1,3 @@
-// header.tsx
 "use client"
 
 import Link from "next/link"
@@ -9,7 +8,7 @@ import { Menu, X, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface HeaderProps {
-  userStatus?: string | null;
+  userStatus: string | null;
 }
 
 export default function Header({ userStatus }: HeaderProps) {
@@ -137,4 +136,3 @@ export default function Header({ userStatus }: HeaderProps) {
     </header>
   )
 }
-
