@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
 import { validateUser } from "@/lib/auth"
 
-// Explicitly type and export the route handler
 export const POST = async function handler(
-  req: NextRequest,
-  context: { params: Record<string, string | string[]> }
+  req: NextRequest
 ): Promise<NextResponse> {
   try {
     const body = await req.json()
