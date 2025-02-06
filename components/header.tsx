@@ -8,6 +8,7 @@ import { Menu, X, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface HeaderProps {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   userStatus: string | null;
 }
 
