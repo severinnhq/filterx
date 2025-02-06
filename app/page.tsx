@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Header from "../components/header"
 import { Button } from "@/components/ui/button"
-import { Smartphone, Check, Monitor, Play, Clock, Info, Sparkles  } from "lucide-react"
+import { Check, Play, Clock } from "lucide-react" // Removed unused icons
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import PreorderSection from "@/components/preorder-section"
 import TweetDemo from "../components/TweetDemo"
@@ -19,7 +19,6 @@ const ComingSoonOverlay = () => (
     </div>
   </div>
 )
-
 export default function Home() {
   const [isClient, setIsClient] = useState(false)
   const [userStatus, setUserStatus] = useState<string | null>(null)
@@ -71,9 +70,10 @@ export default function Home() {
         } else {
           throw new Error("Invalid response from server")
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error:", error)
-        alert(`An error occurred: ${error.message}. Please try again later.`)
+        const message = error instanceof Error ? error.message : "An unknown error occurred"
+        alert(`An error occurred: ${message}. Please try again later.`)
       }
     }
   }
@@ -93,10 +93,14 @@ export default function Home() {
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
           <div className="lg:w-1/2 w-full max-w-[650px] mx-auto lg:mx-0 text-center lg:text-left pt-8 sm:pt-12 md:pt-16 lg:pt-0">
             <div className="w-full">
-              <h1 className="font-bold mb-6 text-gray-900 tracking-wide leading-tight">
-                <span className="block text-[2.25rem] sm:text-[2.75rem] md:text-[3rem] lg:text-[2.75rem] xl:text-[3rem] mb-1">Focus on your growth,</span>
-                <span className="block text-[2.25rem] sm:text-[2.75rem] md:text-[3rem] lg:text-[2.75rem] xl:text-[3rem]">filter out this shi...</span>
-              </h1>
+            <h1 className="font-bold mb-6 text-gray-900 tracking-wide leading-tight">
+      <span className="block text-[2.25rem] sm:text-[2.75rem] md:text-[3rem] lg:text-[2.75rem] xl:text-[3rem] mb-1">
+        Focus on your growth,
+      </span>
+      <span className="block text-[2.25rem] sm:text-[2.75rem] md:text-[3rem] lg:text-[2.75rem] xl:text-[3rem]">
+        filter out this shi...
+      </span>
+    </h1>
               <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-gray-700">
                 Experience a straightforward approach to social media interactions with FilterX.
               </p>
@@ -412,41 +416,46 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Frequently Asked Questions</h2>
             <div className="max-w-3xl mx-auto">
               <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="item-1">
-                  <AccordionTrigger>What is FilterX?</AccordionTrigger>
-                  <AccordionContent>
-                    FilterX is a browser extension that provides a straightforward approach to social media
-                    interactions. It helps users filter and manage their online content more effectively.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-2">
-                  <AccordionTrigger>How do I install FilterX?</AccordionTrigger>
-                  <AccordionContent>
-                    FilterX can be easily installed from your browser's extension store. Simply search for "FilterX",
-                    click on the install button, and follow the prompts to add it to your browser.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-3">
-                  <AccordionTrigger>Is FilterX compatible with my browser?</AccordionTrigger>
-                  <AccordionContent>
-                    FilterX is compatible with major browsers including Chrome, Firefox, Edge, and Safari. We're
-                    constantly working to expand our compatibility to ensure everyone can use FilterX.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-4">
-                  <AccordionTrigger>What's included in the Complete Bundle?</AccordionTrigger>
-                  <AccordionContent>
-                    The Complete Bundle includes access to FilterX on both desktop and mobile platforms, along with
-                    premium features and priority support. It's the most comprehensive way to experience FilterX.
-                  </AccordionContent>
-                </AccordionItem>
-                <AccordionItem value="item-5">
-                  <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
-                  <AccordionContent>
-                    While we don't currently offer a free trial, we do have a satisfaction guarantee. If you're not
-                    happy with FilterX within the first 30 days of purchase, we'll provide a full refund.
-                  </AccordionContent>
-                </AccordionItem>
+              <AccordionItem value="item-5">
+      <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
+      <AccordionContent>
+        While we don&apos;t currently offer a free trial, we do have a satisfaction guarantee. 
+        If you&apos;re not happy with FilterX within the first 30 days of purchase, 
+        we&apos;ll provide a full refund.
+      </AccordionContent>
+    </AccordionItem>
+    <AccordionItem value="item-5">
+      <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
+      <AccordionContent>
+        While we don&apos;t currently offer a free trial, we do have a satisfaction guarantee. 
+        If you&apos;re not happy with FilterX within the first 30 days of purchase, 
+        we&apos;ll provide a full refund.
+      </AccordionContent>
+    </AccordionItem>
+    <AccordionItem value="item-5">
+      <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
+      <AccordionContent>
+        While we don&apos;t currently offer a free trial, we do have a satisfaction guarantee. 
+        If you&apos;re not happy with FilterX within the first 30 days of purchase, 
+        we&apos;ll provide a full refund.
+      </AccordionContent>
+    </AccordionItem>
+    <AccordionItem value="item-5">
+      <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
+      <AccordionContent>
+        While we don&apos;t currently offer a free trial, we do have a satisfaction guarantee. 
+        If you&apos;re not happy with FilterX within the first 30 days of purchase, 
+        we&apos;ll provide a full refund.
+      </AccordionContent>
+    </AccordionItem>
+    <AccordionItem value="item-5">
+      <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
+      <AccordionContent>
+        While we don&apos;t currently offer a free trial, we do have a satisfaction guarantee. 
+        If you&apos;re not happy with FilterX within the first 30 days of purchase, 
+        we&apos;ll provide a full refund.
+      </AccordionContent>
+    </AccordionItem>
               </Accordion>
             </div>
           </div>
