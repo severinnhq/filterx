@@ -45,25 +45,7 @@ interface State {
 // Map to hold timeout IDs for later removal.
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
-// We declare dispatch ahead of its definition so that it can be used in helper functions.
-let dispatch: (action: Action) => void;
-
-const addToRemoveQueue = (toastId: string) => {
-  if (toastTimeouts.has(toastId)) {
-    return;
-  }
-
-  const timeout = setTimeout(() => {
-    toastTimeouts.delete(toastId);
-    dispatch({
-      type: actionTypes.REMOVE_TOAST,
-      toastId: toastId,
-    });
-  }, TOAST_REMOVE_DELAY);
-
-  toastTimeouts.set(toastId, timeout);
-};
-
+// The reducer remains unchanged.
 export const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case actionTypes.ADD_TOAST:
@@ -121,21 +103,39 @@ export const reducer = (state: State, action: Action): State => {
 const listeners: Array<(state: State) => void> = [];
 let memoryState: State = { toasts: [] };
 
-dispatch = (action: Action) => {
+const addToRemoveQueue = (toastId: string) => {
+  if (toastTimeouts.has(toastId)) {
+    return;
+  }
+
+  const timeout = setTimeout(() => {
+    toastTimeouts.delete(toastId);
+    dispatch({
+      type: actionTypes.REMOVE_TOAST,
+      toastId: toastId,
+    });
+  }, TOAST_REMOVE_DELAY);
+
+  toastTimeouts.set(toastId, timeout);
+};
+
+//
+// Instead of a variable, declare dispatch as a function (which is effectively a constant).
+//
+function dispatch(action: Action) {
   memoryState = reducer(memoryState, action);
   listeners.forEach((listener) => {
     listener(memoryState);
   });
-};
+}
 
 type Toast = Omit<ToasterToast, "id">;
 
+let count = 0;
 function genId() {
   count = (count + 1) % Number.MAX_VALUE;
   return count.toString();
 }
-
-let count = 0;
 
 function toast({ ...props }: Toast) {
   const id = genId();
