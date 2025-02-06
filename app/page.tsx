@@ -117,7 +117,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
-      <Header userStatus={userStatus} />
+      <Header />
 
       <main className="flex-grow font-sora">
         {/* Hero Section */}
@@ -443,7 +443,7 @@ export default function Home() {
               <AccordionItem value="item-1">
       <AccordionTrigger>Why do I charge money?</AccordionTrigger>
       <AccordionContent>
-      Because this service doesn’t just hide posts with unwanted keyword/s - it checks for context. If a post has context, it stays visible (even if it contains the keyword/s). 
+      Because this service doesn&apos;t just hide posts with unwanted keyword/s - it checks for context. If a post has context, it stays visible (even if it contains the keyword/s). 
       </AccordionContent>
     </AccordionItem>
     <AccordionItem value="item-2">

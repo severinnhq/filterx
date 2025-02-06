@@ -8,10 +8,10 @@ import { Menu, X, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 interface HeaderProps {
-  userStatus: string | null;
+  // No props needed (remove userStatus since it's unused)
 }
 
-export default function Header({ userStatus }: HeaderProps) {
+export default function Header({}: HeaderProps) { // Remove userStatus from props
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userEmail, setUserEmail] = useState("")
