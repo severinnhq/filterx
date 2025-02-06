@@ -8,25 +8,60 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    const { plan }: { plan: string } = await req.json();
-    const token = req.headers.get("Authorization")?.split(" ")[1];
-
-    if (!token) {
-      throw new Error("Authentication required");
+    // Validate request body
+    const body = await req.json();
+    if (!body || typeof body.plan !== 'string') {
+      return NextResponse.json(
+        { error: "Invalid request body - plan is required" },
+        { status: 400 }
+      );
     }
 
+    const { plan } = body;
+
+    // Safely extract the authorization header
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || typeof authHeader !== 'string') {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    // Safely extract the token
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+      return NextResponse.json(
+        { error: "Invalid authorization format" },
+        { status: 401 }
+      );
+    }
+
+    const token = parts[1];
     const userId = verifyToken(token);
     if (!userId) {
-      throw new Error("Invalid token");
+      return NextResponse.json(
+        { error: "Invalid token" },
+        { status: 401 }
+      );
     }
 
+    // Validate plan and set price
     let price: number;
     if (plan === "extension") {
       price = 299;
     } else if (plan === "bundle") {
       price = 599;
     } else {
-      throw new Error("Invalid plan selected");
+      return NextResponse.json(
+        { error: "Invalid plan selected" },
+        { status: 400 }
+      );
+    }
+
+    // Validate environment variables
+    if (!process.env.NEXT_PUBLIC_URL) {
+      throw new Error("NEXT_PUBLIC_URL environment variable is not set");
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -52,12 +87,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       },
     });
 
+    if (!session.url) {
+      throw new Error("Failed to create Stripe checkout session");
+    }
+
     return NextResponse.json({ url: session.url });
   } catch (err) {
+    console.error("Stripe error:", err);
+    
     if (err instanceof Error) {
-      console.error("Stripe error:", err);
-      return NextResponse.json({ error: err.message }, { status: 500 });
+      return NextResponse.json(
+        { error: err.message },
+        { status: 500 }
+      );
     }
-    return NextResponse.json({ error: "An unknown error occurred" }, { status: 500 });
+    
+    return NextResponse.json(
+      { error: "An unknown error occurred" },
+      { status: 500 }
+    );
   }
 }
