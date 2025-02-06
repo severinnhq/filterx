@@ -2,24 +2,22 @@
 import { NextResponse, NextRequest } from "next/server";
 import { validateUser } from "@/lib/auth";
 
+export const dynamic = 'force-dynamic'; // Add this line
+
 interface LoginBody {
   email: string;
   password: string;
 }
 
 export async function POST(request: NextRequest) {
-  // Safely get the Content-Type header (using optional chaining) and force it to a string.
-  const contentType = String(request.headers?.get("Content-Type") ?? "");
-
-  // (Optional) Log the Content-Type to help debug in your environment.
-  console.log("Content-Type header:", contentType);
+  // Safely get and normalize Content-Type
+  const contentType = String(request.headers?.get("content-type")?.toLowerCase() ?? "");
 
   let body: LoginBody;
   try {
     if (contentType.startsWith("application/json")) {
       body = await request.json();
     } else {
-      // Fallback: try to parse the request body as text then JSON.
       const text = await request.text();
       body = JSON.parse(text);
     }
