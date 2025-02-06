@@ -69,7 +69,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
+    const baseUrl =
+    process.env.NEXT_PUBLIC_URL ||
+    (process.env.NODE_ENV === 'development'
+      ? 'http://localhost:3000'
+      : 'https://filterx.vercel.app/');
 
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
