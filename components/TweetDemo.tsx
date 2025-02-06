@@ -704,169 +704,174 @@ function formatNumber(num: number): string {
     };
   
     return (
-      <div className="bg-white text-black rounded-xl shadow-lg p-0 max-w-xl w-full relative overflow-hidden">
-        <div className="sticky top-0 z-20 bg-white">
-          <div className="border-b border-gray-100 p-3">
-            <div className="flex items-center justify-between bg-gray-50 p-3 rounded-2xl">
-              <div className="flex items-center space-x-3">
-                <div
-                  className={`h-10 w-10 rounded-xl flex items-center justify-center ${
-                    filterEnabled ? "bg-[#2563eb]" : "bg-gray-200"
-                  }`}
-                >
-                  <Image src="/logo.png" alt="FilterX Logo" width={24} height={24} className="h-6 w-6" />
-                </div>
-                <div>
-                  <div className="flex items-center space-x-2">
-                    <h3 className="font-bold text-[15px]">FilterX</h3>
-                    {filterEnabled && (
-                      <span className="text-[13px] text-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-full font-medium">
-                        Enabled
-                      </span>
-                    )}
+        <div className="bg-white text-black rounded-xl shadow-lg p-0 max-w-xl w-full relative overflow-hidden">
+  <div className="sticky top-0 z-20 bg-white">
+    <div className="border-b border-gray-100 p-3">
+      <div className="flex items-center justify-between bg-gray-50 p-3 rounded-2xl">
+        <div className="flex items-center space-x-3">
+          <div
+            className={`h-10 w-10 rounded-xl flex items-center justify-center p-1 transition-all duration-300 ${
+              filterEnabled ? "bg-[#2563eb]" : "bg-gray-200"
+            }`}
+          >
+            <Image src="/logo.png" alt="FilterX Logo" width={24} height={24} className="h-6 w-6" />
+          </div>
+          <div>
+            <div className="flex items-center space-x-2">
+              <h3 className="font-bold text-[15px]">FilterX</h3>
+              {filterEnabled && (
+                <span className="text-[13px] text-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-full font-medium">
+                  Enabled
+                </span>
+              )}
+            </div>
+            <p className="text-gray-500 text-[13px]">Hide generic connection requests</p>
+          </div>
+        </div>
+        <button
+          onClick={() => setFilterEnabled(!filterEnabled)}
+          className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300"
+          style={{ backgroundColor: filterEnabled ? "#2563eb" : "#e5e7eb" }}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+              filterEnabled ? "translate-x-6" : "translate-x-1"  // Adjusted the value here for a subtle right shift
+            }`}
+          />
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div
+    ref={containerRef}
+    className="h-[400px] overflow-y-hidden relative"
+    style={{
+      scrollbarWidth: "none",
+      msOverflowStyle: "none",
+    }}
+  >
+    <div
+      className="absolute left-0 right-0 flex justify-center transition-all duration-300 z-10 bg-white"
+      style={{
+        top: contentOffset > 0 ? "0px" : "-50px",
+        height: "50px",
+        opacity: isLoading || contentOffset > 0 ? 1 : 0,
+      }}
+    >
+      {isLoading ? (
+        <div className="flex items-center justify-center h-full">
+          <svg className="animate-spin" viewBox="0 0 24 24" width="32" height="32">
+            <g>
+              {[...Array(8)].map((_, i) => (
+                <line
+                  key={i}
+                  x1="12"
+                  y1="4"
+                  x2="12"
+                  y2="7"
+                  stroke={i === 0 ? "#4B5563" : "#9CA3AF"}
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  style={{
+                    transformOrigin: "center",
+                    transform: `rotate(${i * 45}deg)`,
+                  }}
+                />
+              ))}
+            </g>
+          </svg>
+        </div>
+      ) : (
+        <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+          Pull to refresh
+        </div>
+      )}
+    </div>
+
+    <div
+      ref={feedRef}
+      className="pt-2"
+      style={{
+        transform: `translateY(${contentOffset}px)`,
+        transition: "transform 0.3s ease-out",
+      }}
+    >
+      {displayTweets.map((tweet, index) => (
+        <article
+          key={`${tweet.id}-${index}`}
+          className="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex space-x-3">
+            <div className="flex-shrink-0">
+              <User className="h-10 w-10 rounded-full bg-gray-200 p-2" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center text-[15px] space-x-1">
+                <span className="font-bold hover:underline">{tweet.username}</span>
+                <span className="text-gray-500">@{tweet.handle}</span>
+                <span className="text-gray-500">·</span>
+                <span className="text-gray-500 hover:underline">{tweet.timestamp}</span>
+              </div>
+              <p className="mt-0.5 mb-2 text-[15px] leading-5">
+                {tweet.isConnectionPost
+                  ? highlightConnectionText(tweet.content)
+                  : formatContent(tweet.content)}
+              </p>
+
+              <div className="flex justify-between items-center mt-2 mr-16 text-gray-500 text-[13px]">
+                <button className="group flex items-center space-x-1 hover:text-[#2563eb]">
+                  <div className="p-1.5 group-hover:bg-blue-50 rounded-full">
+                    <MessageCircle className="h-[18px] w-[18px]" />
                   </div>
-                  <p className="text-gray-500 text-[13px]">Hide generic connection requests</p>
+                  <span>{formatNumber(tweet.comments)}</span>
+                </button>
+
+                <button className="group flex items-center space-x-1 hover:text-emerald-500">
+                  <div className="p-1.5 group-hover:bg-emerald-50 rounded-full">
+                    <Repeat2 className="h-[18px] w-[18px]" />
+                  </div>
+                  <span>{formatNumber(tweet.reposts)}</span>
+                </button>
+
+                <button className="group flex items-center space-x-1 hover:text-rose-500">
+                  <div className="p-1.5 group-hover:bg-rose-50 rounded-full">
+                    <Heart className="h-[18px] w-[18px]" />
+                  </div>
+                  <span>{formatNumber(tweet.likes)}</span>
+                </button>
+
+                <button className="group flex items-center space-x-1 hover:text-[#2563eb]">
+                  <div className="p-1.5 group-hover:bg-blue-50 rounded-full">
+                    <BarChart2 className="h-[18px] w-[18px]" />
+                  </div>
+                  <span>{formatNumber(tweet.views)}</span>
+                </button>
+
+                <div className="flex space-x-1">
+                  <button className="group p-1.5 hover:text-[#2563eb]">
+                    <div className="group-hover:bg-blue-50 rounded-full">
+                      <Bookmark className="h-[18px] w-[18px]" />
+                    </div>
+                  </button>
+                  <button className="group p-1.5 hover:text-[#2563eb]">
+                    <div className="group-hover:bg-blue-50 rounded-full">
+                      <Share className="h-[18px] w-[18px]" />
+                    </div>
+                  </button>
                 </div>
               </div>
-              <button
-                onClick={() => setFilterEnabled(!filterEnabled)}
-                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300"
-                style={{ backgroundColor: filterEnabled ? "#2563eb" : "#e5e7eb" }}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                    filterEnabled ? "translate-x-5" : "translate-x-1"
-                  }`}
-                />
-              </button>
             </div>
           </div>
-        </div>
-  
-        <div
-          ref={containerRef}
-          className="h-[400px] overflow-y-hidden relative"
-          style={{
-            scrollbarWidth: "none",
-            msOverflowStyle: "none",
-          }}
-        >
-          <div
-            className="absolute left-0 right-0 flex justify-center transition-all duration-300 z-10 bg-white"
-            style={{
-              top: contentOffset > 0 ? "0px" : "-50px",
-              height: "50px",
-              opacity: isLoading || contentOffset > 0 ? 1 : 0,
-            }}
-          >
-            {isLoading ? (
-              <div className="flex items-center justify-center h-full">
-                <svg className="animate-spin" viewBox="0 0 24 24" width="32" height="32">
-                  <g>
-                    {[...Array(8)].map((_, i) => (
-                      <line
-                        key={i}
-                        x1="12"
-                        y1="4"
-                        x2="12"
-                        y2="7"
-                        stroke={i === 0 ? "#4B5563" : "#9CA3AF"}
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        style={{
-                          transformOrigin: "center",
-                          transform: `rotate(${i * 45}deg)`,
-                        }}
-                      />
-                    ))}
-                  </g>
-                </svg>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center h-full text-gray-500 text-sm">
-                Pull to refresh
-              </div>
-            )}
-          </div>
-  
-          <div
-            ref={feedRef}
-            className="pt-2"
-            style={{
-              transform: `translateY(${contentOffset}px)`,
-              transition: "transform 0.3s ease-out",
-            }}
-          >
-            {displayTweets.map((tweet, index) => (
-              <article
-                key={`${tweet.id}-${index}`}
-                className="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex space-x-3">
-                  <div className="flex-shrink-0">
-                    <User className="h-10 w-10 rounded-full bg-gray-200 p-2" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center text-[15px] space-x-1">
-                      <span className="font-bold hover:underline">{tweet.username}</span>
-                      <span className="text-gray-500">@{tweet.handle}</span>
-                      <span className="text-gray-500">·</span>
-                      <span className="text-gray-500 hover:underline">{tweet.timestamp}</span>
-                    </div>
-                    <p className="mt-0.5 mb-2 text-[15px] leading-5">
-                      {tweet.isConnectionPost
-                        ? highlightConnectionText(tweet.content)
-                        : formatContent(tweet.content)}
-                    </p>
-  
-                    <div className="flex justify-between items-center mt-2 mr-16 text-gray-500 text-[13px]">
-                      <button className="group flex items-center space-x-1 hover:text-[#2563eb]">
-                        <div className="p-1.5 group-hover:bg-blue-50 rounded-full">
-                          <MessageCircle className="h-[18px] w-[18px]" />
-                        </div>
-                        <span>{formatNumber(tweet.comments)}</span>
-                      </button>
-  
-                      <button className="group flex items-center space-x-1 hover:text-emerald-500">
-                        <div className="p-1.5 group-hover:bg-emerald-50 rounded-full">
-                          <Repeat2 className="h-[18px] w-[18px]" />
-                        </div>
-                        <span>{formatNumber(tweet.reposts)}</span>
-                      </button>
-  
-                      <button className="group flex items-center space-x-1 hover:text-rose-500">
-                        <div className="p-1.5 group-hover:bg-rose-50 rounded-full">
-                          <Heart className="h-[18px] w-[18px]" />
-                        </div>
-                        <span>{formatNumber(tweet.likes)}</span>
-                      </button>
-  
-                      <button className="group flex items-center space-x-1 hover:text-[#2563eb]">
-                        <div className="p-1.5 group-hover:bg-blue-50 rounded-full">
-                          <BarChart2 className="h-[18px] w-[18px]" />
-                        </div>
-                        <span>{formatNumber(tweet.views)}</span>
-                      </button>
-  
-                      <div className="flex space-x-1">
-                        <button className="group p-1.5 hover:text-[#2563eb]">
-                          <div className="group-hover:bg-blue-50 rounded-full">
-                            <Bookmark className="h-[18px] w-[18px]" />
-                          </div>
-                        </button>
-                        <button className="group p-1.5 hover:text-[#2563eb]">
-                          <div className="group-hover:bg-blue-50 rounded-full">
-                            <Share className="h-[18px] w-[18px]" />
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
+        </article>
+      ))}
+    </div>
+  </div>
+</div>
+
+      
+
+      
+
+        );
+    }

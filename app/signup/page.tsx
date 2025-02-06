@@ -1,25 +1,54 @@
+// app/signup/page.tsx
 "use client"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 export default function Signup() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const response = await fetch("/api/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    })
+    setError("")
+    setLoading(true)
 
-    if (response.ok) {
-      router.push("/login")
-    } else {
-      alert("Signup failed")
+    try {
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Signup failed")
+      }
+
+      // Automatically log in after successful signup
+      const loginResponse = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const loginData = await loginResponse.json()
+
+      if (loginResponse.ok) {
+        localStorage.setItem("token", loginData.token)
+        router.push("/")
+      } else {
+        router.push("/login")
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -27,6 +56,11 @@ export default function Signup() {
     <div className="flex min-h-screen flex-col items-center justify-center p-24">
       <h1 className="text-4xl font-bold mb-8">Sign Up</h1>
       <form onSubmit={handleSubmit} className="w-full max-w-xs">
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+          </div>
+        )}
         <input
           type="email"
           value={email}
@@ -45,12 +79,18 @@ export default function Signup() {
         />
         <button
           type="submit"
-          className="w-full px-4 py-2 font-bold text-white bg-green-500 rounded-full hover:bg-green-700 focus:outline-none focus:shadow-outline"
+          disabled={loading}
+          className="w-full px-4 py-2 font-bold text-white bg-green-500 rounded-full hover:bg-green-700 focus:outline-none focus:shadow-outline disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Sign Up
+          {loading ? "Creating Account..." : "Sign Up"}
         </button>
+        <div className="mt-4 text-center text-sm">
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-500 hover:text-blue-700">
+            Log in
+          </Link>
+        </div>
       </form>
     </div>
   )
 }
-

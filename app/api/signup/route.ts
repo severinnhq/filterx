@@ -5,8 +5,8 @@ import bcrypt from "bcryptjs"
 import { z } from "zod"
 
 const userSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
 export async function POST(req: Request) {
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const existingUser = await db.collection("users").findOne({ email })
     if (existingUser) {
       return NextResponse.json(
-        { error: "User already exists" },
+        { error: "Email already registered" },
         { status: 400 }
       )
     }
@@ -32,29 +32,31 @@ export async function POST(req: Request) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12)
     
-    // Create user
+    // Create user with status
     await db.collection("users").insertOne({
       email,
       password: hashedPassword,
-      status: "free", // or whatever default status you want
+      status: "free",
       createdAt: new Date(),
     })
     
     return NextResponse.json(
-      { message: "User created successfully" },
+      { message: "Account created successfully" },
       { status: 201 }
     )
   } catch (error) {
     console.error("Signup error:", error)
+    
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Invalid input data", details: error.errors },
+        { error: error.errors[0].message },
         { status: 400 }
       )
     }
+    
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
+      { error: "Failed to create account. Please try again." },
+        { status: 500 }
     )
   }
 }

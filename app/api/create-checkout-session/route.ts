@@ -1,18 +1,14 @@
-// app/api/create-checkout-session/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { verifyToken } from "@/lib/auth";
 
-// Initialize Stripe with your secret key (make sure it's set)
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', {
   apiVersion: "2024-12-18.acacia" as const,
 });
 
-// Force dynamic rendering (if required)
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
-  // Ensure the Stripe key is configured
   if (!process.env.STRIPE_SECRET_KEY) {
     return NextResponse.json(
       { error: "Stripe key not configured" },
@@ -21,7 +17,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    // Parse and validate the request body
     const body = await request.json();
     if (!body || typeof body.plan !== 'string') {
       return NextResponse.json(
@@ -29,14 +24,12 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { status: 400 }
       );
     }
-    const { plan } = body;
+    const { plan, features } = body;
 
-    // Retrieve the authorization header and default to an empty string if missing
     const rawAuthHeader =
       (request.headers.get("authorization") ||
         request.headers.get("Authorization")) ?? "";
 
-    // If the header is an empty string, return an authentication error
     if (rawAuthHeader === "") {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -44,7 +37,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Safely extract the token
     let token: string;
     if (typeof rawAuthHeader === "string" && rawAuthHeader.startsWith("Bearer ")) {
       token = rawAuthHeader.substring(7);
@@ -52,7 +44,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       token = rawAuthHeader;
     }
 
-    // Verify the token
     const userId = verifyToken(token);
     if (!userId) {
       return NextResponse.json(
@@ -61,12 +52,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Determine the price based on the selected plan
     let price: number;
+    let productName: string;
+    let productDescription: string;
+
     if (plan === "extension") {
-      price = 299;
+      price = 299; // $2.99
+      productName = "FilterX Extension";
     } else if (plan === "bundle") {
-      price = 599;
+      price = 499; // $4.99
+      productName = "Lifetime access to FilterX";
     } else {
       return NextResponse.json(
         { error: "Invalid plan selected" },
@@ -74,20 +69,28 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    // Get the base URL (fallback to localhost)
     const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
 
-    // Create the Stripe checkout session 
-    const session = await stripe.checkout.sessions.create({
+    // Updated features section with your new text
+    const formattedFeatures = `Filter out tweets that do not serve your growth.`;
+
+    productDescription = `${formattedFeatures}`;
+
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ["card"],
+      billing_address_collection: 'required',  // Billing address instead of shipping
       line_items: [
         {
           price_data: {
             currency: "usd",
             product_data: {
-              name: plan === "extension" ? "FilterX Extension" : "FilterX Complete Bundle",
+              name: productName,
+              description: productDescription,
+              metadata: {
+                features: JSON.stringify(features),
+              },
             },
-            unit_amount: price * 100,
+            unit_amount: price,
           },
           quantity: 1,
         },
@@ -96,8 +99,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/`,
       client_reference_id: userId,
-      metadata: { plan },
-    });
+      metadata: { 
+        plan,
+        features: JSON.stringify(features),
+        userId,
+      },
+      custom_text: {
+        submit: {
+          message: 'By completing this purchase, you agree to our terms of service and privacy policy.',
+        },
+      },
+      phone_number_collection: {
+        enabled: true,
+      },
+      allow_promotion_codes: true,
+      locale: 'auto',
+    };
+
+    const session = await stripe.checkout.sessions.create(sessionParams);
 
     return NextResponse.json({ url: session.url });
   } catch (err) {

@@ -38,12 +38,7 @@ function SuccessContent() {
               : "Thank you for purchasing FilterX! You can now access all features of the extension."}
           </p>
           <div className="space-y-4">
-            <Button
-              onClick={() => router.push("/dashboard")}
-              className="w-full bg-blue-600 hover:bg-blue-700"
-            >
-              Go to Dashboard
-            </Button>
+            
             <Button
               onClick={() => router.push("/")}
               variant="outline"

@@ -1,38 +1,48 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { updateUserStatus } from "@/lib/auth";
+import { connectToDatabase } from "@/lib/mongodb"; // Ensure MongoDB connection is correctly imported
+import { ObjectId } from "mongodb"; // Import ObjectId to properly handle MongoDB _id
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
   apiVersion: "2024-12-18.acacia",
 });
 
-export async function POST(req: NextRequest): Promise<NextResponse> {
-  const body = await req.text();
-  const sig = req.headers.get("stripe-signature") as string;
-
-  let event: Stripe.Event;
+export async function POST(request: Request) {
+  const sig = request.headers.get("stripe-signature")!;
+  const body = await request.text();
 
   try {
-    event = stripe.webhooks.constructEvent(body, sig, process.env.STRIPE_WEBHOOK_SECRET!);
+    const event = stripe.webhooks.constructEvent(
+      body,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object as Stripe.Checkout.Session;
+      
+      const { db } = await connectToDatabase(); // Connect to your xfilter DB
+      const users = db.collection("users");
+
+      const userId = session.client_reference_id;
+      const plan = session.metadata?.plan;
+
+      if (!userId || !plan) return;
+
+      let status = "not_paid";
+      if (plan === "extension") status = "basic";
+      if (plan === "bundle") status = "preorder";
+
+      // Make sure userId is converted to ObjectId here for the MongoDB query
+      await users.updateOne(
+        { _id: new ObjectId(userId) },
+        { $set: { status } }
+      );
+    }
+
+    return NextResponse.json({ received: true });
   } catch (err) {
-    if (err instanceof Error) {
-      return NextResponse.json({ message: `Webhook Error: ${err.message}` }, { status: 400 });
-    }
-    return NextResponse.json({ message: "Unknown webhook error" }, { status: 400 });
+    console.error("Webhook error:", err);
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 500 });
   }
-
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
-
-    if (session.payment_status === "paid" && session.client_reference_id) {
-      try {
-        await updateUserStatus(session.client_reference_id, "preorder");
-        console.log(`User ${session.client_reference_id} status updated to preorder`);
-      } catch (error) {
-        console.error("Error updating user status:", error);
-      }
-    }
-  }
-
-  return NextResponse.json({ received: true });
 }

@@ -44,39 +44,73 @@ export default function Home() {
     }
   }, [])
 
-  const handlePurchase = async (plan: string) => {
+  
+
+  const handlePurchaseWithFeatures = async (plan: string, features: string[]) => {
     const token = localStorage.getItem("token")
+    
+    // If no token, redirect to login first
     if (!token) {
+      // Store purchase intent in localStorage
+      localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features }))
       router.push("/login")
-    } else {
-      try {
-        const response = await fetch("/api/create-checkout-session", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ plan }),
-        })
-
-        if (!response.ok) {
-          const errorData = await response.json()
-          throw new Error(errorData.error || "Failed to create checkout session")
+      return
+    }
+  
+    try {
+      const response = await fetch("/api/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Make sure token is properly formatted
+        },
+        body: JSON.stringify({ 
+          plan,
+          features,
+        }),
+      })
+  
+      const data = await response.json()
+  
+      if (!response.ok) {
+        // If token is invalid, clear it and redirect to login
+        if (data.error === "Invalid token") {
+          localStorage.removeItem("token")
+          localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features }))
+          router.push("/login")
+          return
         }
-
-        const { url } = await response.json()
-        if (url) {
-          window.location.href = url
-        } else {
-          throw new Error("Invalid response from server")
-        }
-      } catch (error: unknown) {
-        console.error("Error:", error)
-        const message = error instanceof Error ? error.message : "An unknown error occurred"
-        alert(`An error occurred: ${message}. Please try again later.`)
+        throw new Error(data.error || "Failed to create checkout session")
       }
+  
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        throw new Error("Invalid response from server")
+      }
+    } catch (error: unknown) {
+      console.error("Error:", error)
+      const message = error instanceof Error ? error.message : "An unknown error occurred"
+      alert(`An error occurred: ${message}. Please try again later.`)
     }
   }
+  
+
+  const extensionFeatures = [
+    "Browser Extension Support",
+    "Context-aware filtering",
+    "1-minute no-code setup",
+    "100% filtering rate"
+  ]
+
+  const bundleFeatures = [
+    "Browser Extension Support",
+    "Preorder AI Filtering ✨",
+    "Context-aware filtering",
+    "1-minute no-code setup",
+    "100% filtering rate"
+  ]
+
 
   if (!isClient) {
     return null
@@ -84,113 +118,98 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
-      <Header />
+    <Header />
 
-      <main className="flex-grow font-sora">
-        {/* Hero Section */}
-        <section className="bg-white flex items-center pt-16 min-h-[calc(100vh-4rem)]">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
-          <div className="lg:w-1/2 w-full max-w-[650px] mx-auto lg:mx-0 text-center lg:text-left pt-8 sm:pt-12 md:pt-16 lg:pt-0">
-            <div className="w-full">
-            <h1 className="font-bold mb-6 text-gray-900 tracking-wide leading-tight">
-      <span className="block text-[2.25rem] sm:text-[2.75rem] md:text-[3rem] lg:text-[2.75rem] xl:text-[3rem] mb-1">
-        Focus on your growth,
-      </span>
-      <span className="block text-[2.25rem] sm:text-[2.75rem] md:text-[3rem] lg:text-[2.75rem] xl:text-[3rem]">
-        filter out this shi...
-      </span>
-    </h1>
-              <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-gray-700">
-                Experience a straightforward approach to social media interactions with FilterX.
-              </p>
-              <Button
-                size="lg"
-                className="bg-blue-600 text-white"
-                onClick={() => {
-                  const token = localStorage.getItem("token")
-                  if (!token) {
-                    router.push("/login")
-                  }
-                }}
-              >
-                Get FilterX
-              </Button>
-            </div>
-          </div>
-          <div className="lg:w-1/2 w-full max-w-[500px] lg:max-w-[450px] mx-auto">
-            <TweetDemo />
-          </div>
+    <main className="flex-grow font-sora">
+      {/* Hero Section */}
+      <section className="bg-white flex flex-col justify-between min-h-screen">
+  <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-28 lg:pt-0 flex flex-col lg:flex-row items-center justify-between flex-grow">
+    <div className="lg:w-1/2 w-full max-w-[550px] mx-auto lg:mx-0 text-center lg:text-left mb-8 lg:mb-0">
+      <div className="w-full">
+        <h1 className="font-extrabold mb-6 text-gray-900 tracking-tight leading-tight">
+          <span className="block text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[2.75rem]">
+            Focus on your growth,
+          </span>
+          <span className="block text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[2.75rem]">
+            filter out all these
+          </span>
+          <span className="block text-[2rem] sm:text-[2.5rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[2.75rem]">
+            kinda shi...
+          </span>
+        </h1>
+        <p className="text-sm sm:text-base md:text-lg mb-6 sm:mb-8 text-gray-700 mt-6 sm:mt-8 lg:mt-0">
+          Hide worthless tweets based on keywords
+          <br />
+          or your mood / thoughts.
+        </p>
+        <Button
+          size="lg"
+          className="bg-blue-600 text-white text-lg py-6 px-8 rounded-lg hover:bg-blue-700 transition-colors"
+          onClick={() => handlePurchaseWithFeatures("bundle", bundleFeatures)}
+        >
+          Get FilterX
+        </Button>
+      </div>
+    </div>
+    <div className="lg:w-1/2 w-full max-w-[500px] lg:max-w-[450px] mx-auto mt-6 lg:mt-0">
+      <TweetDemo />
+    </div>
+  </div>
+</section>
+
+
+
+       {/* How It Works Section */}
+<section className="py-20 bg-gray-50">
+  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">How do FilterX Works</h2>
+    <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+      {/* YouTube Video */}
+      <div className="lg:w-1/2 w-full">
+        <div className="relative aspect-video rounded-xl overflow-hidden shadow-lg">
+          <iframe 
+            src="https://www.youtube.com/embed/OwKGaUkfCOk"
+            className="w-full h-full"
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            title="How FilterX Works Video"
+          ></iframe>
         </div>
       </div>
-    </section>
-        {/* How It Works Section */}
-        <section className="py-20 bg-gray-50">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">How FilterX Works</h2>
-            <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-              <div className="lg:w-1/2 w-full">
-                <div className="relative aspect-video bg-gray-200 rounded-xl overflow-hidden">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <Play className="w-16 h-16 text-gray-400" />
-                  </div>
-                  <div className="absolute bottom-4 left-4 bg-white bg-opacity-80 px-3 py-1 rounded-full text-sm font-medium">
-                    How FilterX Works
-                  </div>
-                </div>
-              </div>
-              <div className="lg:w-1/2 w-full">
-                <div className="bg-white p-6 rounded-xl shadow-lg">
-                  <h4 className="text-xl font-semibold mb-4">v0.1 Filtered Words</h4>
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-gray-100 p-3 rounded">
-                      <p className="font-medium">Let&aposs connect</p>
-                    </div>
-                    <div className="bg-gray-100 p-3 rounded">
-                      <p className="font-medium">Let&aposs Connect</p>
-                    </div>
-                    <div className="bg-gray-100 p-3 rounded">
-                      <p className="font-medium">Lets connect</p>
-                    </div>
-                    <div className="bg-gray-100 p-3 rounded">
-                      <p className="font-medium">Lets Connect</p>
-                    </div>
-                  </div>
-                  <div className="mt-6">
-                    <h5 className="text-lg font-semibold mb-2">Creative Alternative</h5>
-                    <div className="bg-blue-100 p-4 rounded-lg text-center">
-                      <p className="text-xl font-bold text-blue-600">🤝 Let&aposs Collaborate!</p>
-                      <p className="text-sm text-blue-500 mt-2">
-                        Building meaningful connections, one interaction at a time.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+
+      {/* HowWorks Image */}
+      <div className="lg:w-1/2 w-full">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          <img 
+            src="/howworks.png" 
+            alt="How FilterX Works" 
+            className="w-full h-auto object-cover"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
         {/* Pricing or Download Section */}
         {userStatus === "preorder" ? (
-          <PreorderSection />
-        ) : userStatus === "onlyextension" ? (
-          <section className="py-20 bg-white">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Download FilterX Extension</h2>
-              <div className="flex justify-center">
-                <Button
-                  onClick={() => {
-                    window.open("https://chrome.google.com/webstore/detail/filterx/your-extension-id", "_blank")
-                  }}
-                  className="bg-blue-600 text-white"
-                  size="lg"
-                >
-                  Download Extension
-                </Button>
-              </div>
-            </div>
-          </section>
+  <PreorderSection />
+) : userStatus === "basic" ? (
+  <section className="py-20 bg-white">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Download FilterX Extension</h2>
+      <div className="flex justify-center">
+        <Button
+          onClick={() => window.open("https://chrome.google.com/webstore/detail/filterx/your-extension-id", "_blank")}
+          className="bg-blue-600 text-white"
+          size="lg"
+        >
+          Download Extension
+        </Button>
+      </div>
+    </div>
+  </section>
         ) : (
           <section className="py-20 bg-white">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -266,9 +285,12 @@ export default function Home() {
           </div>
 
           <div className="mt-auto">
-            <Button onClick={() => handlePurchase("extension")} className="w-full bg-blue-600 text-white hover:bg-blue-700">
-              Get Extension Access
-            </Button>
+          <Button 
+          onClick={() => handlePurchaseWithFeatures("extension", extensionFeatures)} 
+          className="w-full bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Get Extension Access
+        </Button>
             <div className="mt-2 text-center">
               <span className="text-sm text-gray-500">One time payment, yours forever!</span>
             </div>
@@ -336,9 +358,12 @@ export default function Home() {
           </div>
 
           <div className="mt-auto">
-            <Button onClick={() => handlePurchase("bundle")} className="w-full bg-blue-600 text-white hover:bg-blue-700">
-              Get Complete Bundle
-            </Button>
+          <Button 
+          onClick={() => handlePurchaseWithFeatures("bundle", bundleFeatures)} 
+          className="w-full bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Get Complete Bundle
+        </Button>
             <div className="mt-2 text-center">
               <p className="text-sm text-gray-600">One time payment, yours forever!</p>
             </div>
@@ -411,51 +436,36 @@ export default function Home() {
         )}
 
         {/* FAQ Section */}
-        <section className="py-20 bg-gray-50">
+        <section className="py-20 bg-white-50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Frequently Asked Questions</h2>
             <div className="max-w-3xl mx-auto">
               <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="item-5">
-      <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
+              <AccordionItem value="item-1">
+      <AccordionTrigger>Why do I charge money?</AccordionTrigger>
       <AccordionContent>
-        While we don&apos;t currently offer a free trial, we do have a satisfaction guarantee. 
-        If you&apos;re not happy with FilterX within the first 30 days of purchase, 
-        we&apos;ll provide a full refund.
+      Because this service doesn’t just hide posts with unwanted keyword/s - it checks for context. If a post has context, it stays visible (even if it contains the keyword/s). 
       </AccordionContent>
     </AccordionItem>
-    <AccordionItem value="item-5">
-      <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
+    <AccordionItem value="item-2">
+      <AccordionTrigger>Why are the discounts?</AccordionTrigger>
       <AccordionContent>
-        While we don&apos;t currently offer a free trial, we do have a satisfaction guarantee. 
-        If you&apos;re not happy with FilterX within the first 30 days of purchase, 
-        we&apos;ll provide a full refund.
+      The discounts let you buy cheaper before launch. Get the basic plan for $2.99 here (it'll be $3.99 on the Chrome Web Store) and preorder AI filtering for $5, saving $7.99 before it rises to $12.99. Once released, purchases will only be available on the Chrome Web Store at full price.
       </AccordionContent>
     </AccordionItem>
-    <AccordionItem value="item-5">
-      <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
+    <AccordionItem value="item-3">
+      <AccordionTrigger>What is AI filtering?</AccordionTrigger>
       <AccordionContent>
-        While we don&apos;t currently offer a free trial, we do have a satisfaction guarantee. 
-        If you&apos;re not happy with FilterX within the first 30 days of purchase, 
-        we&apos;ll provide a full refund.
+      AI filtering lets you describe the type of posts you don’t want to see, rather than just entering unwanted words. I’ve tested it, and it works pretty accurately. 
       </AccordionContent>
     </AccordionItem>
-    <AccordionItem value="item-5">
-      <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
+    <AccordionItem value="item-4">
+      <AccordionTrigger>What is context-aware filtering?</AccordionTrigger>
       <AccordionContent>
-        While we don&apos;t currently offer a free trial, we do have a satisfaction guarantee. 
-        If you&apos;re not happy with FilterX within the first 30 days of purchase, 
-        we&apos;ll provide a full refund.
+      It checks for context. If a post has context, it stays visible (even if it contains the keyword/s). 
       </AccordionContent>
     </AccordionItem>
-    <AccordionItem value="item-5">
-      <AccordionTrigger>Is there a free trial available?</AccordionTrigger>
-      <AccordionContent>
-        While we don&apos;t currently offer a free trial, we do have a satisfaction guarantee. 
-        If you&apos;re not happy with FilterX within the first 30 days of purchase, 
-        we&apos;ll provide a full refund.
-      </AccordionContent>
-    </AccordionItem>
+    
               </Accordion>
             </div>
           </div>
