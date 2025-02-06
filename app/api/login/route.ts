@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { validateUser } from "@/lib/auth"
 
-export const POST = async function handler(
-  req: NextRequest
+export async function POST(
+  request: NextRequest
 ): Promise<NextResponse> {
   try {
-    const body = await req.json()
+    const body = await request.json()
 
     // Validate request body
     if (!body || typeof body !== 'object') {
