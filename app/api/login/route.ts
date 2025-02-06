@@ -1,20 +1,25 @@
-// app/api/login/route.ts
 import { NextResponse, NextRequest } from "next/server";
 import { validateUser } from "@/lib/auth";
 
+interface LoginBody {
+  email: string;
+  password: string;
+}
+
 export async function POST(request: NextRequest) {
-  let body: any;
-  // Get the content-type header
+  let body: LoginBody | undefined;
+  // Get the content-type header (defaulting to an empty string if not present)
   const contentType = request.headers.get("content-type") || "";
-  
+
   // Check if the request is JSON
   if (contentType.startsWith("application/json")) {
-    body = await request.json();
+    body = (await request.json()) as LoginBody;
   } else {
     // Fallback: try to parse the body as text then JSON.
     try {
-      body = JSON.parse(await request.text());
-    } catch (error) {
+      const text = await request.text();
+      body = JSON.parse(text) as LoginBody;
+    } catch (_error) {
       return NextResponse.json(
         { error: "Invalid or missing JSON body" },
         { status: 400 }
