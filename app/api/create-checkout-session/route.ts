@@ -6,8 +6,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? '', {
   apiVersion: "2024-12-18.acacia" as const
 });
 
+// Only use dynamic export
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Validate stripe key
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (authHeader.startsWith('Bearer ')) {
       token = authHeader.substring(7);
     } else {
-      token = authHeader;  // Handle case where 'Bearer ' prefix might be missing
+      token = authHeader;
     }
 
     const userId = verifyToken(token);
