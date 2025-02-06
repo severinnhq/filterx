@@ -1,32 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { validateUser } from "@/lib/auth";
 
-export const dynamic = 'force-dynamic';
-
-export async function POST(request: NextRequest): Promise<NextResponse> {
+export async function POST(req: Request) {
   try {
-    // Ensure we have a valid request object
-    if (!request || !request.json) {
-      return NextResponse.json(
-        { error: "Invalid request" },
-        { status: 400 }
-      );
-    }
+    const body = await req.json();
 
-    const body = await request.json();
-
-    // Validate request body
-    if (!body || typeof body !== 'object') {
-      return NextResponse.json(
-        { error: "Invalid request body" },
-        { status: 400 }
-      );
-    }
-
-    // Validate required fields
-    if (!body.email || !body.password || 
-        typeof body.email !== 'string' || 
-        typeof body.password !== 'string') {
+    if (!body || !body.email || !body.password) {
       return NextResponse.json(
         { error: "Email and password are required" },
         { status: 400 }
