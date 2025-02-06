@@ -50,7 +50,7 @@ const TermsOfService = () => {
             <section className="space-y-4">
               <h2 className="text-2xl font-semibold text-gray-800">5. Limitations of Service</h2>
               <p className="text-gray-600">
-                FilterX is provided "as is" without warranties of any kind. We do not guarantee that:
+                FilterX is provided &quot;as is&quot; without warranties of any kind. We do not guarantee that:
               </p>
               <ul className="list-disc pl-6 text-gray-600 space-y-2">
                 <li>The service will be uninterrupted or error-free</li>
