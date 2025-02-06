@@ -1,3 +1,4 @@
+// header.tsx
 "use client"
 
 import Link from "next/link"
@@ -7,11 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Menu, X, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-interface HeaderProps {
-  // No props needed (remove userStatus since it's unused)
-}
-
-export default function Header({}: HeaderProps) { // Remove userStatus from props
+// Remove empty interface and empty props destructuring
+export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userEmail, setUserEmail] = useState("")
