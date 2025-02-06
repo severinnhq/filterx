@@ -1,19 +1,19 @@
-import React, { useEffect, useRef, useState } from "react"
-import { User, MessageCircle, Repeat2, Heart, BarChart2, Bookmark, Share } from "lucide-react"
+import React, { useEffect, useRef, useState, useCallback } from "react";
+import Image from "next/image";
+import { User, MessageCircle, Repeat2, Heart, BarChart2, Bookmark, Share } from "lucide-react";
 
 interface Tweet {
-  id: number
-  username: string
-  handle: string
-  content: string
-  comments: number
-  reposts: number
-  likes: number
-  views: number
-  timestamp: string
-  isConnectionPost?: boolean
+  id: number;
+  username: string;
+  handle: string;
+  content: string;
+  comments: number;
+  reposts: number;
+  likes: number;
+  views: number;
+  timestamp: string;
+  isConnectionPost?: boolean;
 }
-
 const connectionTweets: Tweet[][] = [
   [
     {
@@ -589,226 +589,234 @@ const meaningfulTweets: Tweet[][] = [
 ]
 
 function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return (num / 1000000).toFixed(1) + "M"
-  } else if (num >= 1000) {
-    return (num / 1000).toFixed(1) + "K"
-  }
-  return num.toString()
-}
-
-export default function TweetDemo() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const feedRef = useRef<HTMLDivElement>(null)
-  const [filterEnabled, setFilterEnabled] = useState(false)
-  const scrollPositionRef = useRef(0)
-  const animationFrameRef = useRef<number | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [contentOffset, setContentOffset] = useState(0)
-  const [scrollDirection, setScrollDirection] = useState<"down" | "up">("down")
-  const [isScrollingEnabled, setIsScrollingEnabled] = useState(true)
-  const [connectionTweetsIndex, setConnectionTweetsIndex] = useState(0)
-  const [meaningfulTweetsIndex, setMeaningfulTweetsIndex] = useState(0)
-  const [refreshCount, setRefreshCount] = useState(0)
-
-  useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
-
-    const scrollSpeed = 1
-    const maxScroll = container.scrollHeight - container.clientHeight
-    const fastScrollSpeed = 15
-
-    const smoothScroll = () => {
-      if (!container || !isScrollingEnabled) return
-
-      if (scrollDirection === "down") {
-        scrollPositionRef.current += scrollSpeed
-
-        if (scrollPositionRef.current >= maxScroll) {
-          setScrollDirection("up")
-        }
-      } else {
-        scrollPositionRef.current -= fastScrollSpeed
-
-        if (scrollPositionRef.current <= 0) {
-          scrollPositionRef.current = 0
-          triggerPullToRefresh()
-          setScrollDirection("down")
-        }
-      }
-
-      container.scrollTop = scrollPositionRef.current
-      animationFrameRef.current = requestAnimationFrame(smoothScroll)
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + "M";
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + "K";
     }
-
-    animationFrameRef.current = requestAnimationFrame(smoothScroll)
-
-    return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
-    }
-  }, [scrollDirection, isScrollingEnabled])
-
-  const triggerPullToRefresh = () => {
-    setIsScrollingEnabled(false)
-    setIsLoading(true)
-    setContentOffset(50)
-
-    setTimeout(() => {
-      const newConnectionIndex = (connectionTweetsIndex + 1) % connectionTweets.length
-      const newMeaningfulIndex = (meaningfulTweetsIndex + 1) % meaningfulTweets.length
-      
-      setConnectionTweetsIndex(newConnectionIndex)
-      setMeaningfulTweetsIndex(newMeaningfulIndex)
-      setRefreshCount(prev => prev + 1)
-
-      setIsLoading(false)
-      setContentOffset(0)
-      setIsScrollingEnabled(true)
-    }, 2000)
-  }
-
-  const currentConnectionTweets = connectionTweets[connectionTweetsIndex]
-  const currentMeaningfulTweets = meaningfulTweets[meaningfulTweetsIndex]
-
-  const displayTweets = filterEnabled 
-    ? currentMeaningfulTweets.slice(0, 8) 
-    : currentConnectionTweets.slice(0, 8)
-
-  const formatContent = (content: string) => {
-    return content.split('<br/>').map((part, index, array) => (
-      <React.Fragment key={index}>
-        {part}
-        {index < array.length - 1 && <br />}
-      </React.Fragment>
-    ));
-  };
-
-  const highlightConnectionText = (text: string) => {
-    const parts = text.split(/(Let's connect|let's connect)/i)
-    return parts.map((part, index) => {
-      if (part.toLowerCase() === "let's connect") {
-        return (
-          <span key={index} className="bg-yellow-100 px-1 rounded">
-            {part}
-          </span>
-        )
-      }
-      return part
-    })
+    return num.toString();
   }
   
-  return (
-    <div className="bg-white text-black rounded-xl shadow-lg p-0 max-w-xl w-full relative overflow-hidden">
-      <div className="sticky top-0 z-20 bg-white">
-        <div className="border-b border-gray-100 p-3">
-          <div className="flex items-center justify-between bg-gray-50 p-3 rounded-2xl">
-            <div className="flex items-center space-x-3">
-              <div
-                className={`h-10 w-10 rounded-xl flex items-center justify-center ${filterEnabled ? "bg-[#2563eb]" : "bg-gray-200"}`}
-              >
-                <img src="/logo.png" alt="FilterX Logo" className="h-6 w-6" />
-              </div>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="font-bold text-[15px]">FilterX</h3>
-                  {filterEnabled && (
-                    <span className="text-[13px] text-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-full font-medium">
-                      Enabled
-                    </span>
-                  )}
+  export default function TweetDemo() {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const feedRef = useRef<HTMLDivElement>(null);
+    const [filterEnabled, setFilterEnabled] = useState(false);
+    const scrollPositionRef = useRef(0);
+    const animationFrameRef = useRef<number | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+    const [contentOffset, setContentOffset] = useState(0);
+    const [scrollDirection, setScrollDirection] = useState<"down" | "up">("down");
+    const [isScrollingEnabled, setIsScrollingEnabled] = useState(true);
+    const [connectionTweetsIndex, setConnectionTweetsIndex] = useState(0);
+    const [meaningfulTweetsIndex, setMeaningfulTweetsIndex] = useState(0);
+    // Removed refreshCount since it's not used:
+    // const [refreshCount, setRefreshCount] = useState(0);
+  
+    // Wrap triggerPullToRefresh in useCallback so that it is stable.
+    const triggerPullToRefresh = useCallback(() => {
+      setIsScrollingEnabled(false);
+      setIsLoading(true);
+      setContentOffset(50);
+  
+      setTimeout(() => {
+        const newConnectionIndex = (connectionTweetsIndex + 1) % connectionTweets.length;
+        const newMeaningfulIndex = (meaningfulTweetsIndex + 1) % meaningfulTweets.length;
+  
+        setConnectionTweetsIndex(newConnectionIndex);
+        setMeaningfulTweetsIndex(newMeaningfulIndex);
+        // Removed refreshCount update:
+        // setRefreshCount(prev => prev + 1);
+  
+        setIsLoading(false);
+        setContentOffset(0);
+        setIsScrollingEnabled(true);
+      }, 2000);
+    }, [connectionTweetsIndex, meaningfulTweetsIndex]);
+  
+    useEffect(() => {
+      const container = containerRef.current;
+      if (!container) return;
+  
+      const scrollSpeed = 1;
+      const maxScroll = container.scrollHeight - container.clientHeight;
+      const fastScrollSpeed = 15;
+  
+      const smoothScroll = () => {
+        if (!container || !isScrollingEnabled) return;
+  
+        if (scrollDirection === "down") {
+          scrollPositionRef.current += scrollSpeed;
+  
+          if (scrollPositionRef.current >= maxScroll) {
+            setScrollDirection("up");
+          }
+        } else {
+          scrollPositionRef.current -= fastScrollSpeed;
+  
+          if (scrollPositionRef.current <= 0) {
+            scrollPositionRef.current = 0;
+            triggerPullToRefresh();
+            setScrollDirection("down");
+          }
+        }
+  
+        container.scrollTop = scrollPositionRef.current;
+        animationFrameRef.current = requestAnimationFrame(smoothScroll);
+      };
+  
+      animationFrameRef.current = requestAnimationFrame(smoothScroll);
+  
+      return () => {
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
+      };
+    }, [scrollDirection, isScrollingEnabled, triggerPullToRefresh]);
+  
+    const currentConnectionTweets = connectionTweets[connectionTweetsIndex];
+    const currentMeaningfulTweets = meaningfulTweets[meaningfulTweetsIndex];
+  
+    const displayTweets = filterEnabled
+      ? currentMeaningfulTweets.slice(0, 8)
+      : currentConnectionTweets.slice(0, 8);
+  
+    const formatContent = (content: string) => {
+      return content.split('<br/>').map((part, index, array) => (
+        <React.Fragment key={index}>
+          {part}
+          {index < array.length - 1 && <br />}
+        </React.Fragment>
+      ));
+    };
+  
+    const highlightConnectionText = (text: string) => {
+      const parts = text.split(/(Let's connect|let's connect)/i);
+      return parts.map((part, index) => {
+        if (part.toLowerCase() === "let's connect") {
+          return (
+            <span key={index} className="bg-yellow-100 px-1 rounded">
+              {part}
+            </span>
+          );
+        }
+        return part;
+      });
+    };
+  
+    return (
+      <div className="bg-white text-black rounded-xl shadow-lg p-0 max-w-xl w-full relative overflow-hidden">
+        <div className="sticky top-0 z-20 bg-white">
+          <div className="border-b border-gray-100 p-3">
+            <div className="flex items-center justify-between bg-gray-50 p-3 rounded-2xl">
+              <div className="flex items-center space-x-3">
+                <div
+                  className={`h-10 w-10 rounded-xl flex items-center justify-center ${
+                    filterEnabled ? "bg-[#2563eb]" : "bg-gray-200"
+                  }`}
+                >
+                  <Image src="/logo.png" alt="FilterX Logo" width={24} height={24} className="h-6 w-6" />
                 </div>
-                <p className="text-gray-500 text-[13px]">Hide generic connection requests</p>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="font-bold text-[15px]">FilterX</h3>
+                    {filterEnabled && (
+                      <span className="text-[13px] text-[#2563eb] bg-blue-50 px-2 py-0.5 rounded-full font-medium">
+                        Enabled
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-gray-500 text-[13px]">Hide generic connection requests</p>
+                </div>
               </div>
+              <button
+                onClick={() => setFilterEnabled(!filterEnabled)}
+                className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300"
+                style={{ backgroundColor: filterEnabled ? "#2563eb" : "#e5e7eb" }}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
+                    filterEnabled ? "translate-x-5" : "translate-x-1"
+                  }`}
+                />
+              </button>
             </div>
-            <button
-              onClick={() => setFilterEnabled(!filterEnabled)}
-              className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300"
-              style={{ backgroundColor: filterEnabled ? "#2563eb" : "#e5e7eb" }}
-            >
-              <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${
-                  filterEnabled ? "translate-x-5" : "translate-x-1"
-                }`}
-              />
-            </button>
           </div>
         </div>
-      </div>
-
-      <div
-        ref={containerRef}
-        className="h-[400px] overflow-y-hidden relative"
-        style={{
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-        }}
-      >
+  
         <div
-          className="absolute left-0 right-0 flex justify-center transition-all duration-300 z-10 bg-white"
+          ref={containerRef}
+          className="h-[400px] overflow-y-hidden relative"
           style={{
-            top: contentOffset > 0 ? '0px' : '-50px',
-            height: '50px',
-            opacity: isLoading || contentOffset > 0 ? 1 : 0,
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
           }}
         >
-          {isLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <svg className="animate-spin" viewBox="0 0 24 24" width="32" height="32">
-                <g>
-                  {[...Array(8)].map((_, i) => (
-                    <line
-                      key={i}
-                      x1="12"
-                      y1="4"
-                      x2="12"
-                      y2="7"
-                      stroke={i === 0 ? "#4B5563" : "#9CA3AF"}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      style={{
-                        transformOrigin: "center",
-                        transform: `rotate(${i * 45}deg)`,
-                      }}
-                    />
-                  ))}
-                </g>
-              </svg>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-500 text-sm">Pull to refresh</div>
-          )}
-        </div>
-
-        <div
-          ref={feedRef}
-          className="pt-2"
-          style={{
-            transform: `translateY(${contentOffset}px)`,
-            transition: "transform 0.3s ease-out",
-          }}
-        >
-          {displayTweets.map((tweet, index) => (
-            <article
-              key={`${tweet.id}-${index}`}
-              className="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex space-x-3">
-                <div className="flex-shrink-0">
-                  <User className="h-10 w-10 rounded-full bg-gray-200 p-2" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center text-[15px] space-x-1">
-                    <span className="font-bold hover:underline">{tweet.username}</span>
-                    <span className="text-gray-500">@{tweet.handle}</span>
-                    <span className="text-gray-500">·</span>
-                    <span className="text-gray-500 hover:underline">{tweet.timestamp}</span>
+          <div
+            className="absolute left-0 right-0 flex justify-center transition-all duration-300 z-10 bg-white"
+            style={{
+              top: contentOffset > 0 ? "0px" : "-50px",
+              height: "50px",
+              opacity: isLoading || contentOffset > 0 ? 1 : 0,
+            }}
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <svg className="animate-spin" viewBox="0 0 24 24" width="32" height="32">
+                  <g>
+                    {[...Array(8)].map((_, i) => (
+                      <line
+                        key={i}
+                        x1="12"
+                        y1="4"
+                        x2="12"
+                        y2="7"
+                        stroke={i === 0 ? "#4B5563" : "#9CA3AF"}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        style={{
+                          transformOrigin: "center",
+                          transform: `rotate(${i * 45}deg)`,
+                        }}
+                      />
+                    ))}
+                  </g>
+                </svg>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+                Pull to refresh
+              </div>
+            )}
+          </div>
+  
+          <div
+            ref={feedRef}
+            className="pt-2"
+            style={{
+              transform: `translateY(${contentOffset}px)`,
+              transition: "transform 0.3s ease-out",
+            }}
+          >
+            {displayTweets.map((tweet, index) => (
+              <article
+                key={`${tweet.id}-${index}`}
+                className="p-3 border-b border-gray-100 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex space-x-3">
+                  <div className="flex-shrink-0">
+                    <User className="h-10 w-10 rounded-full bg-gray-200 p-2" />
                   </div>
-
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center text-[15px] space-x-1">
+                      <span className="font-bold hover:underline">{tweet.username}</span>
+                      <span className="text-gray-500">@{tweet.handle}</span>
+                      <span className="text-gray-500">·</span>
+                      <span className="text-gray-500 hover:underline">{tweet.timestamp}</span>
+                    </div>
                     <p className="mt-0.5 mb-2 text-[15px] leading-5">
-                        {tweet.isConnectionPost ? highlightConnectionText(tweet.content) : formatContent(tweet.content)}
+                      {tweet.isConnectionPost
+                        ? highlightConnectionText(tweet.content)
+                        : formatContent(tweet.content)}
                     </p>
   
                     <div className="flex justify-between items-center mt-2 mr-16 text-gray-500 text-[13px]">
@@ -860,5 +868,5 @@ export default function TweetDemo() {
           </div>
         </div>
       </div>
-    )
+    );
   }
