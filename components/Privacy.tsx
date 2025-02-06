@@ -39,7 +39,7 @@ const PrivacyPolicy = () => {
             <section className="space-y-4">
               <h2 className="text-2xl font-semibold text-gray-800">3. Data Storage and Security</h2>
               <p className="text-gray-600">
-                Your keywords and settings are stored securely in your browser using Chrome's storage API. We implement industry-standard security measures to protect your personal information and payment data.
+                Your keywords and settings are stored securely in your browser using Chrome&apos;s storage API. We implement industry-standard security measures to protect your personal information and payment data.
               </p>
             </section>
 
