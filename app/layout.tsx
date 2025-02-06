@@ -1,6 +1,7 @@
 import "./globals.css"
 import localFont from "next/font/local"
 import { Sora } from "next/font/google"
+import { Analytics } from "@vercel/analytics/react"
 
 const geist = localFont({
   src: [
@@ -40,8 +41,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geist.variable} ${sora.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        {/* Vercel Analytics component; runs in the background */}
+        <Analytics />
+      </body>
     </html>
   )
 }
-
