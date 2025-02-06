@@ -1,7 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { validateUser } from "@/lib/auth"
 
-export async function POST(req: NextRequest) {
+// Explicitly type and export the route handler
+export const POST = async function handler(
+  req: NextRequest,
+  context: { params: Record<string, string | string[]> }
+): Promise<NextResponse> {
   try {
     const body = await req.json()
 
