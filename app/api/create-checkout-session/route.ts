@@ -77,7 +77,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     // Get the base URL (fallback to localhost)
     const baseUrl = process.env.NEXT_PUBLIC_URL || 'http://localhost:3000';
 
-    // Create the Stripe checkout session
+    // Create the Stripe checkout session 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
