@@ -242,7 +242,7 @@ export default function PreorderSection() {
                 <div className="mt-0">
                   <p className="text-sm text-muted-foreground">
                     <Mail className="inline mr-1 h-4 w-4" />
-                    You'll be notified when the mobile version is available.
+                    You&apos;ll be notified when the mobile version is available.
                   </p>
                 </div>
               </CardFooter>
