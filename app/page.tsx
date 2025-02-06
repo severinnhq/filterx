@@ -441,30 +441,29 @@ export default function Home() {
             <div className="max-w-3xl mx-auto">
               <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="item-1">
-      <AccordionTrigger>Why do I charge money?</AccordionTrigger>
-      <AccordionContent>
-      Because this service doesn&apos;t just hide posts with unwanted keyword/s - it checks for context. If a post has context, it stays visible (even if it contains the keyword/s). 
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="item-2">
-      <AccordionTrigger>Why are the discounts?</AccordionTrigger>
-      <AccordionContent>
-      The discounts let you buy cheaper before launch. Get the basic plan for $2.99 here (it'll be $3.99 on the Chrome Web Store) and preorder AI filtering for $5, saving $7.99 before it rises to $12.99. Once released, purchases will only be available on the Chrome Web Store at full price.
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="item-3">
-      <AccordionTrigger>What is AI filtering?</AccordionTrigger>
-      <AccordionContent>
-      AI filtering lets you describe the type of posts you don’t want to see, rather than just entering unwanted words. I’ve tested it, and it works pretty accurately. 
-      </AccordionContent>
-    </AccordionItem>
-    <AccordionItem value="item-4">
-      <AccordionTrigger>What is context-aware filtering?</AccordionTrigger>
-      <AccordionContent>
-      It checks for context. If a post has context, it stays visible (even if it contains the keyword/s). 
-      </AccordionContent>
-    </AccordionItem>
-    
+                <AccordionTrigger>Why do I charge money?</AccordionTrigger>
+                <AccordionContent>
+                Because this service doesn&apos;t just hide posts with unwanted keyword/s - it checks for context. If a post has context, it stays visible (even if it contains the keyword/s). 
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-2">
+                <AccordionTrigger>Why are the discounts?</AccordionTrigger>
+                <AccordionContent>
+                The discounts let you buy cheaper before launch. Get the basic plan for $2.99 here (it&apos;ll be $3.99 on the Chrome Web Store) and preorder AI filtering for $5, saving $7.99 before it rises to $12.99. Once released, purchases will only be available on the Chrome Web Store at full price.
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-3">
+                <AccordionTrigger>What is AI filtering?</AccordionTrigger>
+                <AccordionContent>
+                AI filtering lets you describe the type of posts you don&apos;t want to see, rather than just entering unwanted words. I&apos;ve tested it, and it works pretty accurately. 
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="item-4">
+                <AccordionTrigger>What is context-aware filtering?</AccordionTrigger>
+                <AccordionContent>
+                It checks for context. If a post has context, it stays visible (even if it contains the keyword/s). 
+                </AccordionContent>
+              </AccordionItem>
               </Accordion>
             </div>
           </div>
