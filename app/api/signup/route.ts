@@ -10,8 +10,8 @@ const userSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
-export const maxDuration = 5 // Set max duration to 5 seconds
-export const dynamic = 'force-dynamic' // Prevent static optimization
+export const maxDuration = 5
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: Request) {
   try {
@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const validatedData = userSchema.parse(body)
     const { email, password } = validatedData
     
-    // Check if user exists with timeout
+    // Check if user exists
     const existingUser = await db.collection<UserDocument>("users").findOne({ email })
     if (existingUser) {
       return NextResponse.json(
@@ -36,10 +36,8 @@ export async function POST(req: Request) {
       )
     }
     
-    // Hash password (bcrypt is already naturally limited in time)
     const hashedPassword = await bcrypt.hash(password, 10)
     
-    // Create user
     await db.collection<UserDocument>("users").insertOne({
       email,
       password: hashedPassword,
@@ -52,7 +50,16 @@ export async function POST(req: Request) {
       { status: 201 }
     )
   } catch (error) {
-    console.error("Signup error:", error)
+    // Enhanced error logging
+    if (error instanceof Error) {
+      console.error("Detailed signup error:", {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      })
+    } else {
+      console.error("Unknown signup error type:", error)
+    }
     
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -61,10 +68,20 @@ export async function POST(req: Request) {
       )
     }
     
-    // Handle timeout error specifically
     if (error instanceof Error && error.message === 'Database connection timeout') {
       return NextResponse.json(
         { error: "Service temporarily unavailable. Please try again." },
+        { status: 503 }
+      )
+    }
+
+    // Check for MongoDB connection errors
+    if (error instanceof Error && 
+        (error.message.includes('MongoServerError') || 
+         error.message.includes('MongoError') ||
+         error.message.includes('connect'))) {
+      return NextResponse.json(
+        { error: "Database connection error. Please try again later." },
         { status: 503 }
       )
     }
