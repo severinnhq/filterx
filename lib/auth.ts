@@ -53,7 +53,7 @@ export function verifyToken(token: string) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: string }
     return decoded.userId
-  } catch (_error) {
+  } catch {
     return null
   }
 }
