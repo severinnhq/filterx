@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Header from "../components/header"
 import { Button } from "@/components/ui/button"
-import { Check, Clock } from "lucide-react"
+import { Check, Clock, Mail } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import PreorderSection from "@/components/preorder-section"
 import TweetDemo from "../components/TweetDemo"
@@ -470,39 +471,105 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Navigation Links */}
-          <div className="flex justify-center space-x-6">
-            <Link href="#how-it-works" className="text-gray-400 hover:text-white transition-colors">
-              How it works?
+      <footer className="bg-gray-900 text-white py-12">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Company Info */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center">
+              <Image 
+                src="/logo.png" 
+                alt="FilterX Logo" 
+                width={32} 
+                height={32} 
+                className="mr-2"
+              />
+              <span className="text-2xl font-bold text-white">FilterX</span>
             </Link>
-            {/* Show FilterX instead of Pricing for paid users */}
-            {userStatus === "basic" || userStatus === "preorder" ? (
-              <Link href="/filterx" className="text-gray-400 hover:text-white transition-colors">
-                FilterX
-              </Link>
-            ) : (
-              <Link href="#pricing-section" className="text-gray-400 hover:text-white transition-colors">
-                Pricing
-              </Link>
-            )}
-            <Link href="#faq" className="text-gray-400 hover:text-white transition-colors">
-              FAQ
-            </Link>
-            <Link href="/privacy" className="text-gray-400 hover:text-white transition-colors">
-              Privacy Policy
-            </Link>
-            <Link href="/terms" className="text-gray-400 hover:text-white transition-colors">
-              Terms of Service
-            </Link>
+            <div className="flex items-center space-x-2 text-gray-400">
+              <Mail size={16} />
+              <a
+                href="mailto:filterxhq@gmail.com"
+                className="text-sm hover:text-white transition-colors"
+              >
+                filterxhq@gmail.com
+              </a>
+            </div>
           </div>
-          {/* Copyright Notice */}
-          <div className="mt-6 text-center">
-            <p>&copy; 2025 FilterX. All rights reserved.</p>
+          
+          {/* Quick Links */}
+          <div>
+            <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
+            <nav className="space-y-3">
+              <div>
+                <Link
+                  href="#how-it-works"
+                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  How it works
+                </Link>
+              </div>
+              <div>
+                {userStatus === "basic" || userStatus === "preorder" ? (
+                  <Link
+                    href="/filterx"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    FilterX Dashboard
+                  </Link>
+                ) : (
+                  <Link
+                    href="#pricing-section"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    Pricing
+                  </Link>
+                )}
+              </div>
+              <div>
+                <Link
+                  href="#faq"
+                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  FAQ
+                </Link>
+              </div>
+            </nav>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h3 className="text-xl font-semibold mb-4">Legal</h3>
+            <nav className="space-y-3">
+              <div>
+                <Link
+                  href="/privacy"
+                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  Privacy Policy
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/terms"
+                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  Terms of Service
+                </Link>
+              </div>
+            </nav>
           </div>
         </div>
-      </footer>
+
+        {/* Divider */}
+        <div className="border-t border-gray-800 my-8" />
+
+        {/* Copyright */}
+        <div className="text-center text-gray-400 text-sm">
+          <p>&copy; {new Date().getFullYear()} FilterX. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
     </div>
   )
 }
