@@ -19,7 +19,6 @@ const PrivacyPolicy = () => {
                 <li>Email address for account management and communication</li>
                 <li>User-defined keywords for content filtering</li>
                 <li>Payment information (processed securely through our payment provider)</li>
-                <li>Basic usage statistics to improve our service</li>
               </ul>
             </section>
 

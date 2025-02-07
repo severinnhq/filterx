@@ -20,16 +20,16 @@ const TermsOfService = () => {
             <section className="space-y-4">
               <h2 className="text-2xl font-semibold text-gray-800">2. Service Description</h2>
               <p className="text-gray-600">
-                FilterX is a browser extension that filters content on X (formerly Twitter) based on user-defined keywords. We provide this service on a subscription basis.
+                FilterX is a browser extension that filters content on X (formerly Twitter) based on user-defined keywords. We provide this service for a one-time payment.
               </p>
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-2xl font-semibold text-gray-800">3. Subscription and Payments</h2>
+              <h2 className="text-2xl font-semibold text-gray-800">3. Payment</h2>
               <ul className="list-disc pl-6 text-gray-600 space-y-2">
-                <li>Subscription fees are charged according to the plan you select</li>
-                <li>Payments are processed securely through our payment provider</li>
-                <li>Subscriptions automatically renew unless cancelled</li>
+                <li>This is a one-time payment for lifetime access</li>
+                <li>Payment is processed securely through our payment provider</li>
+                <li>No recurring charges or subscription renewals</li>
                 <li>Refunds are provided in accordance with our refund policy</li>
               </ul>
             </section>
