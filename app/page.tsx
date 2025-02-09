@@ -10,6 +10,7 @@ import { Check, Clock, Mail } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import PreorderSection from "@/components/preorder-section"
 import TweetDemo from "../components/TweetDemo"
+import InlineCountdownTimer from "../components/InlineCountdownTimer";
 
 interface PurchaseIntent {
   plan: string;
@@ -249,7 +250,7 @@ export default function Home() {
             </div>
             <div className="mt-2 bg-blue-50 rounded-lg p-2">
               <p className="text-xs text-blue-600">
-                <span className="font-semibold">Save $1!</span> Price will be $3.99 on Chrome Web Store
+              <span className="font-semibold">Save $1!</span> Price will be $3.99 on Chrome Web Store <InlineCountdownTimer />
               </p>
             </div>
           </div>
