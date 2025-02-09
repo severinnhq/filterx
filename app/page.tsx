@@ -10,7 +10,6 @@ import { Check, Clock, Mail } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import PreorderSection from "@/components/preorder-section"
 import TweetDemo from "../components/TweetDemo"
-import InlineCountdownTimer from "../components/InlineCountdownTimer";
 
 interface PurchaseIntent {
   plan: string;
