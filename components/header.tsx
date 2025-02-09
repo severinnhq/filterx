@@ -1,4 +1,3 @@
-// header.tsx
 "use client"
 
 import Link from "next/link"
@@ -8,11 +7,11 @@ import { Button } from "@/components/ui/button"
 import { Menu, X, LogOut } from "lucide-react"
 import { useRouter } from "next/navigation"
 
-// Remove empty interface and empty props destructuring
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userEmail, setUserEmail] = useState("")
+  const [userStatus, setUserStatus] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -29,8 +28,11 @@ export default function Header() {
           if (data.user && data.user.email) {
             setUserEmail(data.user.email)
           }
+          if (data.user && data.user.status) {
+            setUserStatus(data.user.status)
+          }
         })
-        .catch((error) => console.error("Error fetching user email:", error))
+        .catch((error) => console.error("Error fetching user data:", error))
     }
   }, [])
 
@@ -38,7 +40,66 @@ export default function Header() {
     localStorage.removeItem("token")
     setIsLoggedIn(false)
     setUserEmail("")
+    setUserStatus(null)
     router.push("/")
+  }
+
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+    setIsMenuOpen(false) // Close mobile menu after clicking
+  }
+
+  const renderNavigationItem = (text: string, sectionId: string) => {
+    // Don't show Pricing if user has paid
+    if (text === "Pricing" && (userStatus === "preorder" || userStatus === "basic")) {
+      return (
+        <li>
+          <button
+            onClick={() => scrollToSection("preorder-section")}
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            FilterX
+          </button>
+        </li>
+      )
+    }
+
+    return (
+      <li>
+        <button
+          onClick={() => scrollToSection(sectionId)}
+          className="text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          {text}
+        </button>
+      </li>
+    )
+  }
+
+  const renderMobileNavigationItem = (text: string, sectionId: string) => {
+    // Don't show Pricing if user has paid
+    if (text === "Pricing" && (userStatus === "preorder" || userStatus === "basic")) {
+      return (
+        <button
+          onClick={() => scrollToSection("preorder-section")}
+          className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 transition-colors w-full text-left"
+        >
+          FilterX
+        </button>
+      )
+    }
+
+    return (
+      <button
+        onClick={() => scrollToSection(sectionId)}
+        className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 transition-colors w-full text-left"
+      >
+        {text}
+      </button>
+    )
   }
 
   return (
@@ -53,21 +114,9 @@ export default function Header() {
           </div>
           <nav className="hidden md:block">
             <ul className="flex space-x-4">
-              <li>
-                <Link href="#how-it-works" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  How it works?
-                </Link>
-              </li>
-              <li>
-                <Link href="#pricing-section" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Pricing
-                </Link>
-              </li>
-              <li>
-                <Link href="#faq" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  FAQ
-                </Link>
-              </li>
+              {renderNavigationItem("How it works?", "how-it-works")}
+              {renderNavigationItem("Pricing", "pricing-section")}
+              {renderNavigationItem("FAQ", "faq")}
             </ul>
           </nav>
           <div className="hidden md:flex items-center space-x-4">
@@ -95,24 +144,9 @@ export default function Header() {
       {isMenuOpen && (
         <div className="md:hidden bg-white">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            <Link
-              href="#how-it-works"
-              className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              How it works?
-            </Link>
-            <Link
-              href="#pricing-section"
-              className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              Pricing
-            </Link>
-            <Link
-              href="#faq"
-              className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 transition-colors"
-            >
-              FAQ
-            </Link>
+            {renderMobileNavigationItem("How it works?", "how-it-works")}
+            {renderMobileNavigationItem("Pricing", "pricing-section")}
+            {renderMobileNavigationItem("FAQ", "faq")}
             <div className="pt-4 space-y-2">
               {isLoggedIn ? (
                 <>

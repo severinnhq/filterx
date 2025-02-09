@@ -17,6 +17,14 @@ interface PurchaseIntent {
   features: string[];
 }
 
+// Add scroll section function
+const scrollToSection = (sectionId: string) => {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
+};
+
 const ComingSoonOverlay = () => (
   <div
     className="absolute inset-0 flex items-center justify-center"
@@ -116,6 +124,7 @@ export default function Home() {
   if (!isClient) {
     return null
   }
+  
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
@@ -143,13 +152,29 @@ export default function Home() {
                   <br />
                   or your mood / thoughts.
                 </p>
-                <Button
-                  size="lg"
-                  className="bg-blue-600 text-white text-lg py-6 px-8 rounded-lg hover:bg-blue-700 transition-colors"
-                  onClick={() => handlePurchaseWithFeatures("bundle", bundleFeatures)}
-                >
-                  Get FilterX
-                </Button>
+        
+{userStatus === "preorder" || userStatus === "basic" ? (
+  <Button
+    size="lg"
+    className="bg-blue-600 text-white text-lg py-6 px-8 rounded-lg hover:bg-blue-700 transition-colors"
+    onClick={() => {
+      const element = document.getElementById('preorder-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }}
+  >
+    Access FilterX
+  </Button>
+) : (
+  <Button
+    size="lg"
+    className="bg-blue-600 text-white text-lg py-6 px-8 rounded-lg hover:bg-blue-700 transition-colors"
+    onClick={() => handlePurchaseWithFeatures("bundle", bundleFeatures)}
+  >
+    Get FilterX
+  </Button>
+)}
               </div>
             </div>
             <div className="lg:w-1/2 w-full max-w-[500px] lg:max-w-[450px] mx-auto mt-6 lg:mt-0">
@@ -224,7 +249,7 @@ export default function Home() {
                     <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm">1</span>
                     <div>
                       <p className="font-medium text-sm">Context-aware</p>
-                      <p className="text-gray-500 text-xs">Detects content, more info in the FAQ</p>
+                      <p className="text-gray-500 text-xs">Detects context, more info in the FAQ</p>
                     </div>
                   </div>
                 </div>
@@ -250,7 +275,7 @@ export default function Home() {
             </div>
             <div className="mt-2 bg-blue-50 rounded-lg p-2">
               <p className="text-xs text-blue-600">
-              <span className="font-semibold">Save $1!</span> Price will be $3.99 on Chrome Web Store <InlineCountdownTimer />
+              <span className="font-semibold">AI Filtering is not included!</span> But you can preorder that on a discounted price
               </p>
             </div>
           </div>
@@ -473,104 +498,104 @@ export default function Home() {
       </main>
 
       <footer className="bg-gray-900 text-white py-12">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Company Info */}
-          <div className="space-y-4">
-            <Link href="/" className="flex items-center">
-              <Image 
-                src="/logo.png" 
-                alt="FilterX Logo" 
-                width={32} 
-                height={32} 
-                className="mr-2"
-              />
-              <span className="text-2xl font-bold text-white">FilterX</span>
-            </Link>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <Mail size={16} />
-              <a
-                href="mailto:filterxhq@gmail.com"
-                className="text-sm hover:text-white transition-colors"
-              >
-                filterxhq@gmail.com
-              </a>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Company Info */}
+            <div className="space-y-4">
+              <Link href="/" className="flex items-center">
+                <Image 
+                  src="/logo.png" 
+                  alt="FilterX Logo" 
+                  width={32} 
+                  height={32} 
+                  className="mr-2"
+                />
+                <span className="text-2xl font-bold text-white">FilterX</span>
+              </Link>
+              <div className="flex items-center space-x-2 text-gray-400">
+                <Mail size={16} />
+                <a
+                  href="mailto:filterxhq@gmail.com"
+                  className="text-sm hover:text-white transition-colors"
+                >
+                  filterxhq@gmail.com
+                </a>
+              </div>
+            </div>
+            
+            {/* Quick Links */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
+              <nav className="space-y-3">
+                <div>
+                  <button
+                    onClick={() => scrollToSection('how-it-works')}
+                    className="text-gray-400 hover:text-white transition-colors text-sm text-left"
+                  >
+                    How it works
+                  </button>
+                </div>
+                <div>
+                  {userStatus === "basic" || userStatus === "preorder" ? (
+                    <button
+                    onClick={() => scrollToSection("preorder-section")}
+                      className="text-gray-400 hover:text-white transition-colors text-sm"
+                    >
+                      FilterX Dashboard
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => scrollToSection('pricing-section')}
+                      className="text-gray-400 hover:text-white transition-colors text-sm text-left"
+                    >
+                      Pricing
+                    </button>
+                  )}
+                </div>
+                <div>
+                  <button
+                    onClick={() => scrollToSection('faq')}
+                    className="text-gray-400 hover:text-white transition-colors text-sm text-left"
+                  >
+                    FAQ
+                  </button>
+                </div>
+              </nav>
+            </div>
+
+            {/* Legal */}
+            <div>
+              <h3 className="text-xl font-semibold mb-4">Legal</h3>
+              <nav className="space-y-3">
+                <div>
+                  <Link
+                    href="/privacy"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    Privacy Policy
+                  </Link>
+                </div>
+                <div>
+                  <Link
+                    href="/terms"
+                    className="text-gray-400 hover:text-white transition-colors text-sm"
+                  >
+                    Terms of Service
+                  </Link>
+                </div>
+              </nav>
             </div>
           </div>
-          
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
-            <nav className="space-y-3">
-              <div>
-                <Link
-                  href="#how-it-works"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  How it works
-                </Link>
-              </div>
-              <div>
-                {userStatus === "basic" || userStatus === "preorder" ? (
-                  <Link
-                    href="/filterx"
-                    className="text-gray-400 hover:text-white transition-colors text-sm"
-                  >
-                    FilterX Dashboard
-                  </Link>
-                ) : (
-                  <Link
-                    href="#pricing-section"
-                    className="text-gray-400 hover:text-white transition-colors text-sm"
-                  >
-                    Pricing
-                  </Link>
-                )}
-              </div>
-              <div>
-                <Link
-                  href="#faq"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  FAQ
-                </Link>
-              </div>
-            </nav>
-          </div>
 
-          {/* Legal */}
-          <div>
-            <h3 className="text-xl font-semibold mb-4">Legal</h3>
-            <nav className="space-y-3">
-              <div>
-                <Link
-                  href="/privacy"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Privacy Policy
-                </Link>
-              </div>
-              <div>
-                <Link
-                  href="/terms"
-                  className="text-gray-400 hover:text-white transition-colors text-sm"
-                >
-                  Terms of Service
-                </Link>
-              </div>
-            </nav>
+          {/* Divider */}
+          <div className="border-t border-gray-800 my-8" />
+
+          {/* Copyright */}
+          <div className="text-center text-gray-400 text-sm">
+            <p>&copy; {new Date().getFullYear()} FilterX. All rights reserved.</p>
           </div>
         </div>
-
-        {/* Divider */}
-        <div className="border-t border-gray-800 my-8" />
-
-        {/* Copyright */}
-        <div className="text-center text-gray-400 text-sm">
-          <p>&copy; {new Date().getFullYear()} FilterX. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
+      </footer>
     </div>
   )
 }
