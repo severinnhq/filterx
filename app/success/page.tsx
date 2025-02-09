@@ -32,16 +32,13 @@ async function ValidateSession({
   }
 }
 
-interface PageProps {
-  params: { slug: string }
-  searchParams: { [key: string]: string | string[] | undefined }
-}
-
 // Main page component (Server Component)
-export default function SuccessPage({
-  searchParams,
-}: PageProps) {
-  const sessionId = typeof searchParams.session_id === 'string' 
+export default function Page({ 
+  searchParams 
+}: { 
+  searchParams?: { [key: string]: string | string[] | undefined } 
+}) {
+  const sessionId = typeof searchParams?.session_id === 'string' 
     ? searchParams.session_id 
     : undefined
 
