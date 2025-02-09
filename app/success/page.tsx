@@ -32,13 +32,18 @@ async function ValidateSession({
   }
 }
 
+interface PageProps {
+  params: { slug: string }
+  searchParams: { [key: string]: string | string[] | undefined }
+}
+
 // Main page component (Server Component)
 export default function SuccessPage({
   searchParams,
-}: {
-  searchParams: { [key: string]: string | undefined }
-}) {
-  const sessionId = searchParams.session_id
+}: PageProps) {
+  const sessionId = typeof searchParams.session_id === 'string' 
+    ? searchParams.session_id 
+    : undefined
 
   if (!sessionId) {
     redirect('/')
