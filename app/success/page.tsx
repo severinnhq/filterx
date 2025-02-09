@@ -33,12 +33,12 @@ async function ValidateSession({
 }
 
 // Main page component (Server Component)
-export default async function SuccessPage({
+export default function SuccessPage({
   searchParams,
 }: {
-  searchParams: { [key: string]: string | string[] | undefined }
+  searchParams: { [key: string]: string | undefined }
 }) {
-  const sessionId = searchParams.session_id as string
+  const sessionId = searchParams.session_id
 
   if (!sessionId) {
     redirect('/')
