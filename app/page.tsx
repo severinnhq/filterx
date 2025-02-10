@@ -191,7 +191,7 @@ export default function Home() {
               <div className="lg:w-1/2 w-full">
                 <div className="relative aspect-video rounded-xl overflow-hidden shadow-xl">
                   <iframe 
-                    src="https://youtu.be/embed/_3y0WYN_B9U"
+                    src="https://youtube.com/embed/_3y0WYN_B9U"
                     className="w-full h-full"
                     style={{ minHeight: "400px" }}
                     frameBorder="0"
