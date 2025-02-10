@@ -30,7 +30,6 @@ const TermsOfService = () => {
                 <li>This is a one-time payment for lifetime access</li>
                 <li>Payment is processed securely through our payment provider</li>
                 <li>No recurring charges or subscription renewals</li>
-                <li>Refunds are provided in accordance with our refund policy</li>
               </ul>
             </section>
 

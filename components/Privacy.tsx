@@ -30,7 +30,6 @@ const PrivacyPolicy = () => {
               <ul className="list-disc pl-6 text-gray-600 space-y-2">
                 <li>Providing and maintaining the FilterX service</li>
                 <li>Processing your payments</li>
-                <li>Sending important updates about our service</li>
                 <li>Improving and optimizing our extension</li>
               </ul>
             </section>
@@ -58,7 +57,6 @@ const PrivacyPolicy = () => {
                 <li>Access your personal data</li>
                 <li>Correct any inaccurate information</li>
                 <li>Request deletion of your data</li>
-                <li>Export your data</li>
               </ul>
             </section>
 

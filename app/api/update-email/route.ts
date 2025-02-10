@@ -3,23 +3,28 @@ import { verifyToken, updateUserEmail } from "@/lib/auth"
 
 export async function POST(req: NextRequest) {
   const token = req.headers.get("Authorization")?.split(" ")[1]
+  console.log("Received Token:", token)
+
   if (!token) {
     return NextResponse.json({ success: false, error: "No token provided" }, { status: 401 })
   }
 
   const userId = verifyToken(token)
+  console.log("Verified UserId:", userId)
+
   if (!userId) {
     return NextResponse.json({ success: false, error: "Invalid token" }, { status: 401 })
   }
 
   const { email } = await req.json()
+  console.log("Received Email:", email)
 
   try {
     await updateUserEmail(userId, email)
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error("Error updating email:", error)
-    return NextResponse.json({ success: false, error: "Failed to update email" }, { status: 500 })
+  } catch (error: unknown) {
+    console.error("Route Handler Error:", error)
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ success: false, error: errorMessage }, { status: 500 })
   }
 }
-

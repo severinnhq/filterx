@@ -304,7 +304,7 @@ export default function Home() {
               </li>
               <li className="flex items-center">
                 <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="font-normal">100% filtering rate</span>
+                <span className="font-normal">Filter out ANY word or expression</span>
               </li>
             </ul>
           </div>
@@ -377,7 +377,7 @@ export default function Home() {
               </li>
               <li className="flex items-center">
                 <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="font-normal">100% filtering rate</span>
+                <span className="font-normal">Filter out ANY word or expression</span>
               </li>
             </ul>
           </div>
@@ -440,7 +440,7 @@ export default function Home() {
               </li>
               <li className="flex items-center">
                 <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
-                <span className="font-normal text-gray-700">100% filtering rate</span>
+                <span className="font-normal text-gray-700">Filter out ANY word or expression</span>
               </li>
             </ul>
           </div>
