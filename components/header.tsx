@@ -119,15 +119,15 @@ export default function Header() {
               {renderNavigationItem("FAQ", "faq")}
             </ul>
           </nav>
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center">
             {isLoggedIn ? (
-              <>
-                <span className="text-sm text-gray-600">{userEmail}</span>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600 truncate max-w-[200px]">{userEmail}</span>
                 <Button variant="outline" onClick={handleLogout}>
                   <LogOut className="h-5 w-5 mr-2" />
                   Logout
                 </Button>
-              </>
+              </div>
             ) : (
               <Button variant="outline" onClick={() => router.push("/login")}>
                 Login
@@ -150,7 +150,7 @@ export default function Header() {
             <div className="pt-4 space-y-2">
               {isLoggedIn ? (
                 <>
-                  <p className="text-sm text-gray-600 px-3">{userEmail}</p>
+                  <p className="text-sm text-gray-600 px-3 truncate">{userEmail}</p>
                   <Button variant="outline" className="w-full" onClick={handleLogout}>
                     <LogOut className="h-5 w-5 mr-2" />
                     Logout
