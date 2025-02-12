@@ -49,11 +49,10 @@ export default function Header() {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
     }
-    setIsMenuOpen(false) // Close mobile menu after clicking
+    setIsMenuOpen(false)
   }
 
   const renderNavigationItem = (text: string, sectionId: string) => {
-    // Don't show Pricing if user has paid
     if (text === "Pricing" && (userStatus === "preorder" || userStatus === "basic")) {
       return (
         <li>
@@ -80,7 +79,6 @@ export default function Header() {
   }
 
   const renderMobileNavigationItem = (text: string, sectionId: string) => {
-    // Don't show Pricing if user has paid
     if (text === "Pricing" && (userStatus === "preorder" || userStatus === "basic")) {
       return (
         <button
@@ -105,42 +103,51 @@ export default function Header() {
   return (
     <header className="fixed w-full bg-white shadow-sm z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
+        <div className="flex items-center h-16">
+          {/* Left section - Logo */}
+          <div className="w-1/4">
             <Link href="/" className="flex items-center">
               <Image src="/logo.png" alt="FilterX Logo" width={32} height={32} className="mr-2" />
               <span className="text-2xl font-bold text-gray-900 font-geist">FilterX</span>
             </Link>
           </div>
-          <nav className="hidden md:block">
+
+          {/* Center section - Navigation */}
+          <nav className="hidden md:flex flex-1 justify-center">
             <ul className="flex space-x-4">
               {renderNavigationItem("How it works?", "how-it-works")}
               {renderNavigationItem("Pricing", "pricing-section")}
               {renderNavigationItem("FAQ", "faq")}
             </ul>
           </nav>
-          <div className="hidden md:flex items-center">
-            {isLoggedIn ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-600 truncate max-w-[200px]">{userEmail}</span>
-                <Button variant="outline" onClick={handleLogout}>
-                  <LogOut className="h-5 w-5 mr-2" />
-                  Logout
+
+          {/* Right section - Auth */}
+          <div className="w-1/4 flex justify-end">
+            <div className="hidden md:flex items-center justify-end">
+              {isLoggedIn ? (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600 truncate max-w-[150px]">{userEmail}</span>
+                  <Button variant="outline" onClick={handleLogout}>
+                    <LogOut className="h-5 w-5 mr-2" />
+                    Logout
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="outline" onClick={() => router.push("/login")}>
+                  Login
                 </Button>
-              </div>
-            ) : (
-              <Button variant="outline" onClick={() => router.push("/login")}>
-                Login
+              )}
+            </div>
+            <div className="md:hidden">
+              <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
-            )}
-          </div>
-          <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Mobile menu */}
       {isMenuOpen && (
         <div className="md:hidden bg-white">
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
