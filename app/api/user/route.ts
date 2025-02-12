@@ -22,7 +22,8 @@ export async function GET(req: Request) {
         status: decoded.status
       }
     })
-  } catch (error) {
+  } catch {
+    // Remove the error parameter since we're not using it
     return NextResponse.json({ error: "Invalid token" }, { status: 401 })
   }
 }
