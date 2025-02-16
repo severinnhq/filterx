@@ -290,7 +290,7 @@ export default function Home() {
       </div>
       <div className="mt-2 bg-green-50 rounded-lg p-2">
         <p className="text-xs text-green-600">
-          <span className="font-semibold">Filterx Chrome extension, all features for free</span>
+          <span className="font-semibold">Filterx extension, all features for free (AI Filtering not included)</span>
         </p>
       </div>
     </div>
@@ -337,7 +337,7 @@ export default function Home() {
   Get FilterX
 </PurchaseHandler>
   <div className="mt-2 text-center">
-    <span className="text-sm text-gray-500">Choose your price on checkout!</span>
+    <span className="text-sm text-gray-500">Free, but you can buy me a coffee☕</span>
   </div>
 </div>
   </div>
