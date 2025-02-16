@@ -3,11 +3,12 @@ import { verifyToken } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
+// Change to:
 export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const authHeader = request.headers.get("Authorization");
-    
+    try {
+      await request.json(); // Just consume the body if needed
+      const authHeader = request.headers.get("Authorization");
+      
     if (!authHeader?.startsWith("Bearer ")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

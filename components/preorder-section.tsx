@@ -56,7 +56,7 @@ export default function PreorderSection() {
               />
             </svg>
             <p className="text-lg font-medium text-gray-700 text-center">
-              You'll be notified via email
+            You&apos;ll be notified via email
               <br />
               when AI filtering launches!
             </p>

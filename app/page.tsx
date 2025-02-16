@@ -6,16 +6,13 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Header from "../components/header"
 import { Button } from "@/components/ui/button"
-import { Check, Clock, Mail, Heart, Download, Coffee } from "lucide-react"
+import { Check, Clock, Mail } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import PreorderSection from "@/components/preorder-section"
 import TweetDemo from "../components/TweetDemo"
 import BasicSection from "@/components/basic"
 
-interface PurchaseIntent {
-  plan: string;
-  features: string[];
-}
+
 
 const scrollToSection = (sectionId: string) => {
   console.log('Scrolling to:', sectionId); // Debug log
@@ -38,7 +35,7 @@ const ComingSoonOverlay = () => (
 export default function Home() {
   const [isClient, setIsClient] = useState(false)
   const [userStatus, setUserStatus] = useState<string | null>(null)
-  const router = useRouter()
+
 
   useEffect(() => {
     setIsClient(true); // Mark that we are now on the client

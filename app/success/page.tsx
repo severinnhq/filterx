@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 
 function SuccessContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const plan = searchParams.get("plan")
 
   return (
