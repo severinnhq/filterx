@@ -45,7 +45,15 @@ export async function validateUser(body: { email: string; password: string }) {
     return { error: "Invalid credentials" }
   }
   
-  const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "1d" })
+  const token = jwt.sign(
+    { 
+      userId: user._id.toString(), // Convert the ObjectId to a string
+      email: user.email, 
+      status: user.status 
+    }, 
+    JWT_SECRET, 
+    { expiresIn: "1d" }
+  );
   return { token, user: { id: user._id, email: user.email, status: user.status } }
 }
 
@@ -71,18 +79,18 @@ export async function getUserById(userId: string) {
 }
 
 export async function updateUserStatus(userId: string, status: string) {
-  const client = await clientPromise
-  const db = client.db("filterx")
+  const client = await clientPromise;
+  const db = client.db("filterx");
   const result = await db.collection("users").updateOne(
-    { _id: new ObjectId(userId) }, 
+    { _id: new ObjectId(userId) },
     { $set: { status: status } }
-  )
+  );
   
   if (result.matchedCount === 0) {
-    throw new Error("User not found")
+    throw new Error("User not found");
   }
   
-  return { message: "User status updated successfully" }
+  return { message: "User status updated successfully" };
 }
 
 export async function updateUserEmail(userId: string, email: string) {

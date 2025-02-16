@@ -53,14 +53,20 @@ export default function Header() {
   }
 
   const renderNavigationItem = (text: string, sectionId: string) => {
-    if (text === "Pricing" && (userStatus === "preorder" || userStatus === "basic")) {
+    if (text === "Pricing" && userStatus) {
+      const targetSection = userStatus === "preorder" 
+        ? "preorder-section" 
+        : userStatus === "basic" 
+        ? "basic-section" 
+        : sectionId;
+
       return (
         <li>
           <button
-            onClick={() => scrollToSection("preorder-section")}
+            onClick={() => scrollToSection(targetSection)}
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
-            FilterX
+            {userStatus ? "FilterX" : text}
           </button>
         </li>
       )
@@ -79,13 +85,19 @@ export default function Header() {
   }
 
   const renderMobileNavigationItem = (text: string, sectionId: string) => {
-    if (text === "Pricing" && (userStatus === "preorder" || userStatus === "basic")) {
+    if (text === "Pricing" && userStatus) {
+      const targetSection = userStatus === "preorder" 
+        ? "preorder-section" 
+        : userStatus === "basic" 
+        ? "basic-section" 
+        : sectionId;
+
       return (
         <button
-          onClick={() => scrollToSection("preorder-section")}
+          onClick={() => scrollToSection(targetSection)}
           className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 transition-colors w-full text-left"
         >
-          FilterX
+          {userStatus ? "FilterX" : text}
         </button>
       )
     }

@@ -1,14 +1,14 @@
-// app/success/page.tsx
+// app/thank-you/page.tsx
 "use client"
 
 import { Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
-function SuccessContent() {
+function ThankYouContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const plan = searchParams.get("plan")
+  const amount = searchParams.get("amount")
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
@@ -30,22 +30,21 @@ function SuccessContent() {
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Payment Successful!
+            Thank You for Your Support!
           </h2>
           <p className="text-gray-600 mb-6">
-            {plan === "bundle"
-              ? "Thank you for purchasing the Complete Bundle! You now have access to both the extension and AI filtering features."
-              : "Thank you for purchasing FilterX! You can now access all features of the extension."}
+            {amount 
+              ? `Your generous donation of $${amount} helps us continue improving FilterX for everyone.`
+              : "Your generous donation helps us continue improving FilterX for everyone."}
           </p>
           <div className="space-y-4">
-            
-          <Button
-  onClick={() => { window.location.href = "/" }}
-  variant="outline"
-  className="w-full"
->
-  Return Home
-</Button>
+            <Button
+              onClick={() => router.push("/")}
+              variant="outline"
+              className="w-full"
+            >
+              Return Home
+            </Button>
           </div>
         </div>
       </div>
@@ -53,10 +52,10 @@ function SuccessContent() {
   )
 }
 
-export default function SuccessPage() {
+export default function ThankYouPage() {
   return (
     <Suspense fallback={<Loading />}>
-      <SuccessContent />
+      <ThankYouContent />
     </Suspense>
   )
 }

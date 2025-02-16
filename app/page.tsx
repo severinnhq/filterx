@@ -6,29 +6,29 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Header from "../components/header"
 import { Button } from "@/components/ui/button"
-import { Check, Clock, Mail } from "lucide-react"
+import { Check, Clock, Mail, Heart, Download, Coffee } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import PreorderSection from "@/components/preorder-section"
 import TweetDemo from "../components/TweetDemo"
+import BasicSection from "@/components/basic"
 
 interface PurchaseIntent {
   plan: string;
   features: string[];
 }
 
-// Add scroll section function
 const scrollToSection = (sectionId: string) => {
+  console.log('Scrolling to:', sectionId); // Debug log
   const element = document.getElementById(sectionId);
   if (element) {
     element.scrollIntoView({ behavior: 'smooth' });
+  } else {
+    console.log('Section not found:', sectionId); // Debug log
   }
 };
 
 const ComingSoonOverlay = () => (
-  <div
-    className="absolute inset-0 flex items-center justify-center"
-    style={{ backgroundColor: "rgba(255, 255, 255, 0.9)" }}
-  >
+  <div className="absolute inset-0 flex items-center justify-center bg-white/90">
     <div className="bg-white text-gray-900 text-lg font-bold py-2 px-6 rounded-full shadow-lg z-20 -rotate-12">
       Coming Soon
     </div>
@@ -41,68 +41,111 @@ export default function Home() {
   const router = useRouter()
 
   useEffect(() => {
-    setIsClient(true)
-    const token = localStorage.getItem("token")
+    setIsClient(true); // Mark that we are now on the client
+  
+    // Example: Fetch the user data once the component mounts
+    const token = localStorage.getItem("token");
     if (token) {
       fetch("/api/user", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
         .then((res) => res.json())
         .then((data) => {
-          if (data.user && data.user.status) {
-            setUserStatus(data.user.status)
-            console.log("User status:", data.user.status)
+          if (data.user?.status) {
+            setUserStatus(data.user.status);
           }
         })
-        .catch((error) => console.error("Error fetching user data:", error))
+        .catch(console.error);
     }
-  }, [])
+  }, []);
 
-  const handlePurchaseWithFeatures = async (plan: string, features: string[]) => {
-    const token = localStorage.getItem("token")
+  const PurchaseHandler = ({ 
+    userStatus, 
+    onScroll, 
+    plan, 
+    features, 
+    paymentType = 'free',
+    amount,
+    className,
+    children
+  }: {
+    userStatus: string | null;
+    onScroll: (section: string) => void;
+    plan: string;
+    features: string[];
+    paymentType?: 'free' | 'custom';
+    amount?: number;
+    className?: string;
+    children: React.ReactNode;
+  }) => {
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
+  
+    const handlePurchase = async () => {
+      setLoading(true);
+      const token = localStorage.getItem("token");
     
-    if (!token) {
-      localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features } as PurchaseIntent))
-      router.push("/login")
-      return
-    }
-  
-    try {
-      const response = await fetch("/api/create-checkout-session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ plan, features }),
-      })
-  
-      const data = await response.json()
-  
-      if (!response.ok) {
-        if (data.error === "Invalid token") {
-          localStorage.removeItem("token")
-          localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features } as PurchaseIntent))
-          router.push("/login")
-          return
+      try {
+        if (!token) {
+          localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features }));
+          router.push("/login");
+          return;
         }
-        throw new Error(data.error || "Failed to create checkout session")
+    
+        if (userStatus && userStatus !== "free") {
+          if (userStatus === "basic") {
+            onScroll('basic-section');
+          } else if (userStatus === "preorder") {
+            onScroll('preorder-section');
+          }
+          return;
+        }
+    
+        const response = await fetch("/api/create-checkout-session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({ plan, features, paymentType, amount }),
+        });
+    
+        const data = await response.json();
+    
+        if (!response.ok) {
+          if (data.error === "Invalid token") {
+            localStorage.removeItem("token");
+            localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features }));
+            router.push("/login");
+            return;
+          }
+          throw new Error(data.error || "Failed to process request");
+        }
+    
+        if (data.success && data.status) {
+          // Refresh the page to update the UI with new status
+          window.location.reload();
+        } else if (data.url) {
+          window.location.href = data.url;
+        }
+      } catch (error) {
+        console.error("Purchase error:", error);
+        alert(`Error: ${error instanceof Error ? error.message : "Transaction failed"}`);
+      } finally {
+        setLoading(false);
       }
+    };
   
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        throw new Error("Invalid response from server")
-      }
-    } catch (error) {
-      console.error("Error:", error)
-      const message = error instanceof Error ? error.message : "An unknown error occurred"
-      alert(`An error occurred: ${message}. Please try again later.`)
-    }
-  }
-
+    return (
+      <Button
+        onClick={handlePurchase}
+        disabled={loading}
+        className={className}
+      >
+        {loading ? "Processing..." : children}
+      </Button>
+    );
+  };
   const extensionFeatures = [
     "Browser Extension Support",
     "Context-aware filtering",
@@ -118,12 +161,7 @@ export default function Home() {
     "100% filtering rate"
   ]
 
-
-
-  if (!isClient) {
-    return null
-  }
-  
+  if (!isClient) return null
 
   return (
     <div className="min-h-screen flex flex-col bg-white text-gray-900">
@@ -151,29 +189,17 @@ export default function Home() {
                   <br />
                   or your mood / thoughts.
                 </p>
-        
-{userStatus === "preorder" || userStatus === "basic" ? (
-  <Button
-    size="lg"
-    className="bg-blue-600 text-white text-lg py-6 px-8 rounded-lg hover:bg-blue-700 transition-colors"
-    onClick={() => {
-      const element = document.getElementById('preorder-section');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }}
-  >
-    Access FilterX
-  </Button>
-) : (
-  <Button
-    size="lg"
-    className="bg-blue-600 text-white text-lg py-6 px-8 rounded-lg hover:bg-blue-700 transition-colors"
-    onClick={() => handlePurchaseWithFeatures("bundle", bundleFeatures)}
-  >
-    Get FilterX
-  </Button>
-)}
+                
+              <PurchaseHandler
+  userStatus={userStatus}
+  onScroll={scrollToSection}
+  plan="bundle"
+  features={bundleFeatures}
+  paymentType="custom"
+  className="bg-blue-600 text-white hover:bg-blue-700 text-lg py-6 px-8"
+>
+  Get FilterX
+</PurchaseHandler>
               </div>
             </div>
             <div className="lg:w-1/2 w-full max-w-[500px] lg:max-w-[450px] mx-auto mt-6 lg:mt-0">
@@ -217,29 +243,17 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Pricing or Download Section */}
-        {userStatus === "preorder" ? (
-          <PreorderSection />
-        ) : userStatus === "basic" ? (
-          <section className="py-20 bg-white">
+ {/* Pricing/Status Section */}
+ {userStatus === "preorder" ? (
+  <PreorderSection />
+) : userStatus === "basic" ? (
+  <BasicSection />
+) : (
+          <section id="pricing-section" className="py-20 bg-white">
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Download FilterX Extension</h2>
-              <div className="flex justify-center">
-                <Button
-                  onClick={() => window.open("https://chrome.google.com/webstore/detail/filterx/your-extension-id", "_blank")}
-                  className="bg-blue-600 text-white"
-                  size="lg"
-                >
-                  Download Extension
-                </Button>
-              </div>
-            </div>
-          </section>
-        ) : (
-          <section  id="pricing-section" className="py-20 bg-white">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Launch Discount</h2>
-        
+              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Launch Discount</h2>
+
+              
             {/* Feature Number Legend */}
             <div className="flex flex-col items-center mb-12 space-y-4">
               <div className="flex items-center gap-4 bg-gray-50 px-6 py-4 rounded-lg shadow-sm">
@@ -263,65 +277,74 @@ export default function Home() {
               </div>
             </div>
     <div className="flex flex-col md:flex-row justify-center items-stretch gap-8 max-w-5xl mx-auto mt-4 pt-8">
-      {/* Extension Only Plan */}
-      <div className="w-full md:w-[calc(33.333%-1rem)] bg-white rounded-lg shadow-lg overflow-visible flex flex-col">
-        <div className="p-8 flex flex-col h-full">
-          <div className="mb-6">
-            <div className="flex justify-between items-start">
-              <div className="flex flex-col">
-                <span className="text-4xl font-extrabold text-gray-800">$2.99</span>
-              </div>
-            </div>
-            <div className="mt-2 bg-blue-50 rounded-lg p-2">
-              <p className="text-xs text-blue-600">
-              <span className="font-semibold">AI Filtering is not included!</span> But you can preorder that on a discounted price
-              </p>
-            </div>
-          </div>
-
-          <div className="flex-1 mb-6">
-            <ul className="space-y-4">
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="flex items-center font-normal">
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png" alt="Chrome" className="w-5 h-5 mr-1" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png" alt="Firefox" className="w-5 h-5 mr-1" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png" alt="Edge" className="w-5 h-5 mr-1" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png" alt="Opera" className="w-5 h-5 mr-1" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png" alt="Safari" className="w-5 h-5" />
-                </span>
-              </li>
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="font-normal">
-                  Context-aware filtering
-                  <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs">1</span>
-                </span>
-              </li>
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="font-normal">1-minute no-code setup</span>
-              </li>
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="font-normal">Filter out ANY word or expression</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="mt-auto">
-          <Button 
-          onClick={() => handlePurchaseWithFeatures("extension", extensionFeatures)} 
-          className="w-full bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Get Extension Access
-        </Button>
-            <div className="mt-2 text-center">
-              <span className="text-sm text-gray-500">One time payment, yours forever!</span>
-            </div>
-          </div>
+  {/* Free Plan Card */}
+  <div className="w-full md:w-[calc(33.333%-1rem)] bg-white rounded-lg shadow-lg overflow-visible flex flex-col">
+  <div className="absolute -top-3 left-0 right-0 flex justify-center z-10">
+    <div className="bg-green-500 text-white text-[10px] tracking-wider uppercase font-semibold px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
+      Free Forever
+    </div>
+  </div>
+  <div className="p-8 flex flex-col h-full">
+    <div className="mb-6">
+      <div className="flex justify-between items-start">
+        <div className="flex flex-col">
+          <span className="text-4xl font-extrabold text-gray-800">Free</span>
         </div>
       </div>
+      <div className="mt-2 bg-green-50 rounded-lg p-2">
+        <p className="text-xs text-green-600">
+          <span className="font-semibold">Filterx Chrome extension, all features for free</span>
+        </p>
+      </div>
+    </div>
+
+    <div className="flex-1 mb-6">
+      <ul className="space-y-4">
+        <li className="flex items-center">
+          <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+          <span className="flex items-center font-normal">
+            <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png" alt="Chrome" className="w-5 h-5 mr-1" />
+            <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png" alt="Firefox" className="w-5 h-5 mr-1" />
+            <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png" alt="Edge" className="w-5 h-5 mr-1" />
+            <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png" alt="Opera" className="w-5 h-5 mr-1" />
+            <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png" alt="Safari" className="w-5 h-5" />
+          </span>
+        </li>
+        <li className="flex items-center">
+          <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+          <span className="font-normal">
+            Context-aware filtering
+            <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs">1</span>
+          </span>
+        </li>
+        <li className="flex items-center">
+          <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+          <span className="font-normal">1-minute no-code setup</span>
+        </li>
+        <li className="flex items-center">
+          <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+          <span className="font-normal">Filter out ANY word or expression</span>
+        </li>
+      </ul>
+    </div>
+
+    <div className="mt-auto space-y-3">
+    <PurchaseHandler
+  userStatus={userStatus}
+  onScroll={scrollToSection}
+  plan="extension"
+  features={extensionFeatures}
+  paymentType="free"
+  className="w-full bg-green-600 text-white hover:bg-green-700"
+>
+  Get FilterX
+</PurchaseHandler>
+  <div className="mt-2 text-center">
+    <span className="text-sm text-gray-500">Choose your price on checkout!</span>
+  </div>
+</div>
+  </div>
+</div>
 
       {/* Bundle Plan */}
       <div className="w-full md:w-[calc(33.333%-1rem)] bg-white rounded-lg shadow-lg overflow-visible outline outline-2 outline-blue-500 relative flex flex-col">
@@ -383,12 +406,16 @@ export default function Home() {
           </div>
 
           <div className="mt-auto">
-          <Button 
-          onClick={() => handlePurchaseWithFeatures("bundle", bundleFeatures)} 
-          className="w-full bg-blue-600 text-white hover:bg-blue-700"
-        >
-          Get Complete Bundle
-        </Button>
+          <PurchaseHandler
+  userStatus={userStatus}
+  onScroll={scrollToSection}
+  plan="bundle"
+  features={bundleFeatures}
+  paymentType="custom"
+  className="w-full bg-blue-600 text-white hover:bg-blue-700"
+>
+  Get Complete Bundle
+</PurchaseHandler>
             <div className="mt-2 text-center">
               <p className="text-sm text-gray-600">One time payment, yours forever!</p>
             </div>
@@ -497,8 +524,8 @@ export default function Home() {
       </main>
 
       <footer className="bg-gray-900 text-white py-12">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Company Info */}
             <div className="space-y-4">
               <Link href="/" className="flex items-center">
@@ -522,46 +549,51 @@ export default function Home() {
               </div>
             </div>
             
-            {/* Quick Links */}
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
-              <nav className="space-y-3">
-                <div>
-                  <button
-                    onClick={() => scrollToSection('how-it-works')}
-                    className="text-gray-400 hover:text-white transition-colors text-sm text-left"
-                  >
-                    How it works
-                  </button>
-                </div>
-                <div>
-                  {userStatus === "basic" || userStatus === "preorder" ? (
-                    <button
-                    onClick={() => scrollToSection("preorder-section")}
-                      className="text-gray-400 hover:text-white transition-colors text-sm"
-                    >
-                      FilterX Dashboard
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => scrollToSection('pricing-section')}
-                      className="text-gray-400 hover:text-white transition-colors text-sm text-left"
-                    >
-                      Pricing
-                    </button>
-                  )}
-                </div>
-                <div>
-                  <button
-                    onClick={() => scrollToSection('faq')}
-                    className="text-gray-400 hover:text-white transition-colors text-sm text-left"
-                  >
-                    FAQ
-                  </button>
-                </div>
-              </nav>
-            </div>
-
+           {/* Quick Links */}
+      <div>
+        <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
+        <nav className="space-y-3">
+          <div>
+            <button
+              onClick={() => scrollToSection('how-it-works')}
+              className="text-gray-400 hover:text-white transition-colors text-sm text-left"
+            >
+              How it works
+            </button>
+          </div>
+          <div>
+            {userStatus === "basic" || userStatus === "preorder" ? (
+              <button
+                onClick={() => {
+                  if (userStatus === "basic") {
+                    scrollToSection("basic-section");
+                  } else {
+                    scrollToSection("preorder-section");
+                  }
+                }}
+                className="text-gray-400 hover:text-white transition-colors text-sm"
+              >
+                FilterX
+              </button>
+            ) : (
+              <button
+                onClick={() => scrollToSection('pricing-section')}
+                className="text-gray-400 hover:text-white transition-colors text-sm text-left"
+              >
+                Pricing
+              </button>
+            )}
+          </div>
+          <div>
+            <button
+              onClick={() => scrollToSection('faq')}
+              className="text-gray-400 hover:text-white transition-colors text-sm text-left"
+            >
+              FAQ
+            </button>
+          </div>
+        </nav>
+      </div>
             {/* Legal */}
             <div>
               <h3 className="text-xl font-semibold mb-4">Legal</h3>
