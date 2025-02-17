@@ -12,36 +12,55 @@ import PreorderSection from "@/components/preorder-section"
 import TweetDemo from "../components/TweetDemo"
 import BasicSection from "@/components/basic"
 
-
-
-const scrollToSection = (sectionId: string) => {
-  console.log('Scrolling to:', sectionId); // Debug log
-  const element = document.getElementById(sectionId);
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth' });
-  } else {
-    console.log('Section not found:', sectionId); // Debug log
-  }
-};
-
-const ComingSoonOverlay = () => (
-  <div className="absolute inset-0 flex items-center justify-center bg-white/90">
-    <div className="bg-white text-gray-900 text-lg font-bold py-2 px-6 rounded-full shadow-lg z-20 -rotate-12">
-      Coming Soon
-    </div>
-  </div>
-)
-
-export default function Home() {
+export default function Page() {
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
   const [isClient, setIsClient] = useState(false)
   const [userStatus, setUserStatus] = useState<string | null>(null)
 
+  const handleSubscribe = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setMessage('')
+  
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      })
+  
+      const data = await res.json()
+  
+      if (res.ok) {
+        setMessage(data.message || 'Subscription successful!')
+        setEmail('')
+      } else {
+        setMessage(data.message || 'Something went wrong.')
+      }
+    } catch (error) {
+      console.error('Error subscribing:', error)
+      setMessage('An error occurred. Please try again.')
+    }
+  }
+
+
+
+  const scrollToSection = (sectionId: string) => {
+    console.log('Scrolling to:', sectionId)
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    } else {
+      console.log('Section not found:', sectionId)
+    }
+  }
 
   useEffect(() => {
-    setIsClient(true); // Mark that we are now on the client
+    setIsClient(true)
   
-    // Example: Fetch the user data once the component mounts
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token")
     if (token) {
       fetch("/api/user", {
         headers: { Authorization: `Bearer ${token}` },
@@ -49,12 +68,20 @@ export default function Home() {
         .then((res) => res.json())
         .then((data) => {
           if (data.user?.status) {
-            setUserStatus(data.user.status);
+            setUserStatus(data.user.status)
           }
         })
-        .catch(console.error);
+        .catch(console.error)
     }
-  }, []);
+  }, [])
+
+  const ComingSoonOverlay = () => (
+    <div className="absolute inset-0 flex items-center justify-center bg-white/90">
+      <div className="bg-white text-gray-900 text-lg font-bold py-2 px-6 rounded-full shadow-lg z-20 -rotate-12">
+        Coming Soon
+      </div>
+    </div>
+  )
 
   const PurchaseHandler = ({ 
     userStatus, 
@@ -66,36 +93,36 @@ export default function Home() {
     className,
     children
   }: {
-    userStatus: string | null;
-    onScroll: (section: string) => void;
-    plan: string;
-    features: string[];
-    paymentType?: 'free' | 'custom';
-    amount?: number;
-    className?: string;
-    children: React.ReactNode;
+    userStatus: string | null
+    onScroll: (section: string) => void
+    plan: string
+    features: string[]
+    paymentType?: 'free' | 'custom'
+    amount?: number
+    className?: string
+    children: React.ReactNode
   }) => {
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
+    const [loading, setLoading] = useState(false)
+    const router = useRouter()
   
     const handlePurchase = async () => {
-      setLoading(true);
-      const token = localStorage.getItem("token");
+      setLoading(true)
+      const token = localStorage.getItem("token")
     
       try {
         if (!token) {
-          localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features }));
-          router.push("/login");
-          return;
+          localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features }))
+          router.push("/login")
+          return
         }
     
         if (userStatus && userStatus !== "free") {
           if (userStatus === "basic") {
-            onScroll('basic-section');
+            onScroll('basic-section')
           } else if (userStatus === "preorder") {
-            onScroll('preorder-section');
+            onScroll('preorder-section')
           }
-          return;
+          return
         }
     
         const response = await fetch("/api/create-checkout-session", {
@@ -105,33 +132,32 @@ export default function Home() {
             "Authorization": `Bearer ${token}`,
           },
           body: JSON.stringify({ plan, features, paymentType, amount }),
-        });
+        })
     
-        const data = await response.json();
+        const data = await response.json()
     
         if (!response.ok) {
           if (data.error === "Invalid token") {
-            localStorage.removeItem("token");
-            localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features }));
-            router.push("/login");
-            return;
+            localStorage.removeItem("token")
+            localStorage.setItem("purchaseIntent", JSON.stringify({ plan, features }))
+            router.push("/login")
+            return
           }
-          throw new Error(data.error || "Failed to process request");
+          throw new Error(data.error || "Failed to process request")
         }
     
         if (data.success && data.status) {
-          // Refresh the page to update the UI with new status
-          window.location.reload();
+          window.location.reload()
         } else if (data.url) {
-          window.location.href = data.url;
+          window.location.href = data.url
         }
       } catch (error) {
-        console.error("Purchase error:", error);
-        alert(`Error: ${error instanceof Error ? error.message : "Transaction failed"}`);
+        console.error("Purchase error:", error)
+        alert(`Error: ${error instanceof Error ? error.message : "Transaction failed"}`)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
   
     return (
       <Button
@@ -141,8 +167,9 @@ export default function Home() {
       >
         {loading ? "Processing..." : children}
       </Button>
-    );
-  };
+    )
+  }
+
   const extensionFeatures = [
     "Browser Extension Support",
     "Context-aware filtering",
@@ -157,7 +184,6 @@ export default function Home() {
     "1-minute no-code setup",
     "100% filtering rate"
   ]
-
   if (!isClient) return null
 
   return (
@@ -240,249 +266,252 @@ export default function Home() {
           </div>
         </section>
 
- {/* Pricing/Status Section */}
- {userStatus === "preorder" ? (
+ 
+{/* Pricing/Status Section */}
+{userStatus === "preorder" ? (
   <PreorderSection />
 ) : userStatus === "basic" ? (
   <BasicSection />
 ) : (
-          <section id="pricing-section" className="py-20 bg-white">
-            <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Launch Discount</h2>
+  <section id="pricing-section" className="py-20 bg-white">
+    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Launch Discount</h2>
 
-              
-            {/* Feature Number Legend */}
-            <div className="flex flex-col items-center mb-12 space-y-4">
-              <div className="flex items-center gap-4 bg-gray-50 px-6 py-4 rounded-lg shadow-sm">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm">1</span>
-                    <div>
-                      <p className="font-medium text-sm">Context-aware</p>
-                      <p className="text-gray-500 text-xs">Detects context, more info in the FAQ</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="h-8 w-px bg-gray-200 mx-2" />
-                <div className="flex items-center gap-1.5">
-                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm">2</span>
-                  <div>
-                    <p className="font-medium text-sm">AI Filtering</p>
-                    <p className="text-gray-500 text-xs">Filter with prompts, more info in the FAQ</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-    <div className="flex flex-col md:flex-row justify-center items-stretch gap-8 max-w-5xl mx-auto mt-4 pt-8">
-  {/* Free Plan Card */}
-  <div className="w-full md:w-[calc(33.333%-1rem)] bg-white rounded-lg shadow-lg overflow-visible flex flex-col">
-  <div className="absolute -top-3 left-0 right-0 flex justify-center z-10">
-    <div className="bg-green-500 text-white text-[10px] tracking-wider uppercase font-semibold px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
-      Free Forever
-    </div>
-  </div>
-  <div className="p-8 flex flex-col h-full">
-    <div className="mb-6">
-      <div className="flex justify-between items-start">
-        <div className="flex flex-col">
-          <span className="text-4xl font-extrabold text-gray-800">Free</span>
-        </div>
-      </div>
-      <div className="mt-2 bg-green-50 rounded-lg p-2">
-        <p className="text-xs text-green-600">
-          <span className="font-semibold">Filterx extension, all features for free (AI Filtering not included)</span>
-        </p>
-      </div>
-    </div>
-
-    <div className="flex-1 mb-6">
-      <ul className="space-y-4">
-        <li className="flex items-center">
-          <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-          <span className="flex items-center font-normal">
-            <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png" alt="Chrome" className="w-5 h-5 mr-1" />
-            <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png" alt="Firefox" className="w-5 h-5 mr-1" />
-            <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png" alt="Edge" className="w-5 h-5 mr-1" />
-            <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png" alt="Opera" className="w-5 h-5 mr-1" />
-            <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png" alt="Safari" className="w-5 h-5" />
-          </span>
-        </li>
-        <li className="flex items-center">
-          <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-          <span className="font-normal">
-            Context-aware filtering
-            <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs">1</span>
-          </span>
-        </li>
-        <li className="flex items-center">
-          <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-          <span className="font-normal">1-minute no-code setup</span>
-        </li>
-        <li className="flex items-center">
-          <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-          <span className="font-normal">Filter out ANY word or expression</span>
-        </li>
-      </ul>
-    </div>
-
-    <div className="mt-auto space-y-3">
-    <PurchaseHandler
-  userStatus={userStatus}
-  onScroll={scrollToSection}
-  plan="extension"
-  features={extensionFeatures}
-  paymentType="free"
-  className="w-full bg-green-600 text-white hover:bg-green-700"
->
-  Get FilterX
-</PurchaseHandler>
-  <div className="mt-2 text-center">
-    <span className="text-sm text-gray-500">Free, but you can buy me a coffee☕</span>
-  </div>
-</div>
-  </div>
-</div>
-
-      {/* Bundle Plan */}
-      <div className="w-full md:w-[calc(33.333%-1rem)] bg-white rounded-lg shadow-lg overflow-visible outline outline-2 outline-blue-500 relative flex flex-col">
-        <div className="absolute -top-3 left-0 right-0 flex justify-center z-10">
-          <div className="bg-blue-500 text-white text-[10px] tracking-wider uppercase font-semibold px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
-            🔒 Lock your price
-          </div>
-        </div>
-        <div className="p-8 flex flex-col h-full">
-          <div className="mb-6">
-            <div className="flex justify-between items-start">
+      {/* Feature Number Legend */}
+      <div className="flex flex-col items-center mb-12 space-y-4">
+        <div className="flex flex-col sm:flex-row items-center gap-4 bg-gray-50 px-4 sm:px-6 py-4 rounded-lg shadow-sm">
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm">1</span>
               <div>
-                <span className="text-lg font-semibold line-through text-gray-500 mr-2">$12.99</span>
-                <span className="text-4xl font-extrabold text-gray-800">$4.99</span>
+                <p className="font-medium text-sm">Context-aware</p>
+                <p className="text-gray-500 text-xs">Detects context, more info in the FAQ</p>
               </div>
             </div>
-            <div className="mt-2 bg-blue-50 rounded-lg p-2">
-              <p className="text-xs text-blue-600">
-                <span className="font-semibold">Save $8!</span> Price will increase to $12.99 when AI Filtering launches
-              </p>
-            </div>
           </div>
-
-          <div className="flex-1 mb-6">
-            <ul className="space-y-4">
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="flex items-center font-normal">
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png" alt="Chrome" className="w-5 h-5 mr-1" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png" alt="Firefox" className="w-5 h-5 mr-1" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png" alt="Edge" className="w-5 h-5 mr-1" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png" alt="Opera" className="w-5 h-5 mr-1" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png" alt="Safari" className="w-5 h-5" />
-                </span>
-              </li>
-              <li className="flex items-center">
-                <Clock className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="font-normal">
-                  Preorder AI Filtering ✨
-                  <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs">2</span>
-                </span>
-              </li>
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="font-normal">
-                  Context-aware filtering
-                  <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs">1</span>
-                </span>
-              </li>
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="font-normal">1-minute no-code setup</span>
-              </li>
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                <span className="font-normal">Filter out ANY word or expression</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="mt-auto">
-          <PurchaseHandler
-  userStatus={userStatus}
-  onScroll={scrollToSection}
-  plan="bundle"
-  features={bundleFeatures}
-  paymentType="custom"
-  className="w-full bg-blue-600 text-white hover:bg-blue-700"
->
-  Get Complete Bundle
-</PurchaseHandler>
-            <div className="mt-2 text-center">
-              <p className="text-sm text-gray-600">One time payment, yours forever!</p>
+          <div className="hidden sm:block h-8 w-px bg-gray-200 mx-2" />
+          <div className="flex items-center gap-1.5 mt-4 sm:mt-0">
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm">2</span>
+            <div>
+              <p className="font-medium text-sm">AI Filtering</p>
+              <p className="text-gray-500 text-xs">Filter with prompts, more info in the FAQ</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Coming Soon Plan */}
-      <div className="w-full md:w-[calc(33.333%-1rem)] bg-white rounded-lg shadow-lg overflow-hidden relative flex flex-col">
-        <ComingSoonOverlay />
-        <div className="p-8 flex flex-col h-full">
-          <div className="mb-6">
-            <div className="flex justify-between items-start">
-              <div>
-                <span className="text-4xl font-extrabold text-gray-700">$12.99</span>
+      {/* Pricing Cards Container */}
+      <div className="flex flex-col lg:flex-row justify-center items-stretch gap-8 max-w-5xl mx-auto mt-4 pt-8">
+        {/* Free Plan Card */}
+        <div className="w-full lg:w-[calc(33.333%-1rem)] bg-white rounded-lg shadow-lg overflow-visible flex flex-col mb-8 lg:mb-0">
+          <div className="absolute -top-3 left-0 right-0 flex justify-center z-10">
+            <div className="bg-green-500 text-white text-[10px] tracking-wider uppercase font-semibold px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
+              Free Forever
+            </div>
+          </div>
+          <div className="p-8 flex flex-col h-full">
+            <div className="mb-6">
+              <div className="flex justify-between items-start">
+                <div className="flex flex-col">
+                  <span className="text-4xl font-extrabold text-gray-800">Free</span>
+                </div>
+              </div>
+              <div className="mt-2 bg-green-50 rounded-lg p-2">
+                <p className="text-xs text-green-600">
+                  <span className="font-semibold">Filterx extension, all features for free (AI Filtering not included)</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex-1 mb-6">
+              <ul className="space-y-4">
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                  <span className="flex items-center font-normal">
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png" alt="Chrome" className="w-5 h-5 mr-1" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png" alt="Firefox" className="w-5 h-5 mr-1" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png" alt="Edge" className="w-5 h-5 mr-1" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png" alt="Opera" className="w-5 h-5 mr-1" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png" alt="Safari" className="w-5 h-5" />
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                  <span className="font-normal">
+                    Context-aware filtering
+                    <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs">1</span>
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                  <span className="font-normal">1-minute no-code setup</span>
+                </li>
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                  <span className="font-normal">Filter out ANY word or expression</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="mt-auto space-y-3">
+              <PurchaseHandler
+                userStatus={userStatus}
+                onScroll={scrollToSection}
+                plan="extension"
+                features={extensionFeatures}
+                paymentType="free"
+                className="w-full bg-green-600 text-white hover:bg-green-700"
+              >
+                Get FilterX
+              </PurchaseHandler>
+              <div className="mt-2 text-center">
+                <span className="text-sm text-gray-500">Free, but you can buy me a coffee☕</span>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="flex-1 mb-6">
-            <ul className="space-y-4">
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
-                <span className="flex items-center font-normal">
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png" alt="Chrome" className="w-5 h-5 mr-1 opacity-80" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png" alt="Firefox" className="w-5 h-5 mr-1 opacity-80" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png" alt="Edge" className="w-5 h-5 mr-1 opacity-80" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png" alt="Opera" className="w-5 h-5 mr-1 opacity-80" />
-                  <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png" alt="Safari" className="w-5 h-5 opacity-80" />
-                </span>
-              </li>
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
-                <span className="font-normal text-gray-700">
-                  AI Filtering ✨
-                  <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-700 text-xs">2</span>
-                </span>
-              </li>
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
-                <span className="font-normal text-gray-700">
-                  Context-aware filtering
-                  <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-700 text-xs">1</span>
-                </span>
-              </li>
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
-                <span className="font-normal text-gray-700">1-minute no-code setup</span>
-              </li>
-              <li className="flex items-center">
-                <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
-                <span className="font-normal text-gray-700">Filter out ANY word or expression</span>
-              </li>
-            </ul>
+        {/* Bundle Plan */}
+        <div className="w-full lg:w-[calc(33.333%-1rem)] bg-white rounded-lg shadow-lg overflow-visible outline outline-2 outline-blue-500 relative flex flex-col mb-8 lg:mb-0">
+          <div className="absolute -top-3 left-0 right-0 flex justify-center z-10">
+            <div className="bg-blue-500 text-white text-[10px] tracking-wider uppercase font-semibold px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
+              🔒 Lock your price
+            </div>
           </div>
+          <div className="p-8 flex flex-col h-full">
+            <div className="mb-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-lg font-semibold line-through text-gray-500 mr-2">$12.99</span>
+                  <span className="text-4xl font-extrabold text-gray-800">$4.99</span>
+                </div>
+              </div>
+              <div className="mt-2 bg-blue-50 rounded-lg p-2">
+                <p className="text-xs text-blue-600">
+                  <span className="font-semibold">Save $8!</span> Price will increase to $12.99 when AI Filtering launches
+                </p>
+              </div>
+            </div>
 
-          <div className="mt-auto">
-            <Button disabled className="w-full bg-gray-300 text-gray-700 cursor-not-allowed hover:bg-gray-300">
-              Coming Soon
-            </Button>
-            <div className="mt-2 text-center">
-              <span className="text-sm text-gray-600">One time payment, yours forever!</span>
+            <div className="flex-1 mb-6">
+              <ul className="space-y-4">
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                  <span className="flex items-center font-normal">
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png" alt="Chrome" className="w-5 h-5 mr-1" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png" alt="Firefox" className="w-5 h-5 mr-1" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png" alt="Edge" className="w-5 h-5 mr-1" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png" alt="Opera" className="w-5 h-5 mr-1" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png" alt="Safari" className="w-5 h-5" />
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <Clock className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                  <span className="font-normal">
+                    Preorder AI Filtering ✨
+                    <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs">2</span>
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                  <span className="font-normal">
+                    Context-aware filtering
+                    <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-100 text-blue-600 text-xs">1</span>
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                  <span className="font-normal">1-minute no-code setup</span>
+                </li>
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                  <span className="font-normal">Filter out ANY word or expression</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="mt-auto">
+              <PurchaseHandler
+                userStatus={userStatus}
+                onScroll={scrollToSection}
+                plan="bundle"
+                features={bundleFeatures}
+                paymentType="custom"
+                className="w-full bg-blue-600 text-white hover:bg-blue-700"
+              >
+                Get Complete Bundle
+              </PurchaseHandler>
+              <div className="mt-2 text-center">
+                <p className="text-sm text-gray-600">One time payment, yours forever!</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Coming Soon Plan */}
+        <div className="w-full lg:w-[calc(33.333%-1rem)] bg-white rounded-lg shadow-lg overflow-hidden relative flex flex-col">
+          <ComingSoonOverlay />
+          <div className="p-8 flex flex-col h-full">
+            <div className="mb-6">
+              <div className="flex justify-between items-start">
+                <div>
+                  <span className="text-4xl font-extrabold text-gray-700">$12.99</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 mb-6">
+              <ul className="space-y-4">
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
+                  <span className="flex items-center font-normal">
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/chrome/chrome_48x48.png" alt="Chrome" className="w-5 h-5 mr-1 opacity-80" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/firefox/firefox_48x48.png" alt="Firefox" className="w-5 h-5 mr-1 opacity-80" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/edge/edge_48x48.png" alt="Edge" className="w-5 h-5 mr-1 opacity-80" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/opera/opera_48x48.png" alt="Opera" className="w-5 h-5 mr-1 opacity-80" />
+                    <img src="https://raw.githubusercontent.com/alrra/browser-logos/main/src/safari/safari_48x48.png" alt="Safari" className="w-5 h-5 opacity-80" />
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
+                  <span className="font-normal text-gray-700">
+                    AI Filtering ✨
+                    <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-700 text-xs">2</span>
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
+                  <span className="font-normal text-gray-700">
+                    Context-aware filtering
+                    <span className="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-gray-200 text-gray-700 text-xs">1</span>
+                  </span>
+                </li>
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
+                  <span className="font-normal text-gray-700">1-minute no-code setup</span>
+                </li>
+                <li className="flex items-center">
+                  <Check className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />
+                  <span className="font-normal text-gray-700">Filter out ANY word or expression</span>
+                </li>
+              </ul>
+            </div>
+
+
+            <div className="mt-auto">
+              <Button disabled className="w-full bg-gray-300 text-gray-700 cursor-not-allowed hover:bg-gray-300">
+                Coming Soon
+              </Button>
+              <div className="mt-2 text-center">
+                <span className="text-sm text-gray-600">One time payment, yours forever!</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-            </div>
-          </section>
-        )}
+  </section>
+)}
 
         {/* FAQ Section */}
         <section id="faq" className="py-40 bg-white-50">
@@ -521,109 +550,157 @@ export default function Home() {
       </main>
 
       <footer className="bg-gray-900 text-white py-12">
-  <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Company Info */}
-            <div className="space-y-4">
-              <Link href="/" className="flex items-center">
-                <Image 
-                  src="/logo.png" 
-                  alt="FilterX Logo" 
-                  width={32} 
-                  height={32} 
-                  className="mr-2"
-                />
-                <span className="text-2xl font-bold text-white">FilterX</span>
-              </Link>
-              <div className="flex items-center space-x-2 text-gray-400">
-                <Mail size={16} />
-                <a
-                  href="mailto:filterxhq@gmail.com"
-                  className="text-sm hover:text-white transition-colors"
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          
+          {/* Company Info */}
+          <div className="space-y-4">
+            <Link href="/" className="flex items-center">
+              <Image 
+                src="/logo.png" 
+                alt="FilterX Logo" 
+                width={32} 
+                height={32} 
+                className="mr-2"
+              />
+              <span className="text-2xl font-bold text-white">FilterX</span>
+            </Link>
+            <div className="flex items-center space-x-2 text-gray-400">
+              <Mail size={16} />
+              <a
+                href="mailto:filterxhq@gmail.com"
+                className="text-sm hover:text-white transition-colors"
+              >
+                filterxhq@gmail.com
+              </a>
+            </div>
+          </div>
+          
+          {/* Quick Links */}
+          <div className="lg:col-span-1">
+            <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
+            <nav className="space-y-3">
+              <div>
+                <button
+                  onClick={() => scrollToSection('how-it-works')}
+                  className="text-gray-400 hover:text-white transition-colors text-sm text-left"
                 >
-                  filterxhq@gmail.com
-                </a>
+                  How it works
+                </button>
+              </div>
+              <div>
+                <button
+                  onClick={() => scrollToSection('pricing-section')}
+                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  FilterX
+                </button>
+              </div>
+              <div>
+                <button
+                  onClick={() => scrollToSection('faq')}
+                  className="text-gray-400 hover:text-white transition-colors text-sm text-left"
+                >
+                  FAQ
+                </button>
+              </div>
+            </nav>
+          </div>
+          
+          {/* Legal */}
+          <div className="lg:col-span-1">
+            <h3 className="text-xl font-semibold mb-4">Legal</h3>
+            <nav className="space-y-3">
+              <div>
+                <Link
+                  href="/privacy"
+                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  Privacy Policy
+                </Link>
+              </div>
+              <div>
+                <Link
+                  href="/terms"
+                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                  Terms of Service
+                </Link>
+              </div>
+            </nav>
+          </div>
+          
+          {/* Newsletter Section */}
+          <div className="lg:col-span-1">
+            <h3 className="text-xl font-semibold mb-4 text-center sm:text-left">
+              I document the whole journey
+            </h3>
+
+            <div className="flex justify-center sm:justify-start">
+              <div className="w-full sm:w-[320px] md:w-[640px] lg:w-[760px] px-8 sm:px-6 md:px-0 space-y-6">
+                {/* Text and Image Container */}
+                <div className="flex max-[400px]:flex-col flex-row items-start gap-6">
+                  <div className="w-full max-[400px]:w-full md:w-[60%]">
+                    <p className="text-gray-400 whitespace-pre-line leading-tight text-sm md:text-sm lg:text-sm">
+                      Watch me recreate<br />
+                      this with my<br />
+                      co-founder.
+                    </p>
+                  </div>
+
+                  <div className="w-full max-[400px]:w-full md:w-[40%] h-16">
+                    <div className="relative w-full h-full">
+                      <Image 
+                        src="/lambo.png" 
+                        alt="Lambo" 
+                        fill
+                        className="rounded object-cover"
+                        quality={100}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSubscribe} className="w-full space-y-2">
+  <input
+    type="email"
+    value={email}
+    onChange={(e) => setEmail(e.target.value)}
+    placeholder="Your email"
+    className="w-full px-4 py-3 rounded bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+    required
+  />
+  <button
+    type="submit"
+    className="w-full px-4 py-3 bg-[#5c4ba3] hover:bg-[#4c3d8a] rounded text-white transition-colors text-sm"
+  >
+    Subscribe
+  </button>
+  {message && (
+    <div className={`text-sm ${
+      message.includes('Success') || message.includes('already subscribed') 
+        ? 'text-green-400' 
+        : 'text-red-400'
+    }`}>
+      {message}
+    </div>
+  )}
+</form>
               </div>
             </div>
-            
-           {/* Quick Links */}
-      <div>
-        <h3 className="text-xl font-semibold mb-4">Quick Links</h3>
-        <nav className="space-y-3">
-          <div>
-            <button
-              onClick={() => scrollToSection('how-it-works')}
-              className="text-gray-400 hover:text-white transition-colors text-sm text-left"
-            >
-              How it works
-            </button>
-          </div>
-          <div>
-            {userStatus === "basic" || userStatus === "preorder" ? (
-              <button
-                onClick={() => {
-                  if (userStatus === "basic") {
-                    scrollToSection("basic-section");
-                  } else {
-                    scrollToSection("preorder-section");
-                  }
-                }}
-                className="text-gray-400 hover:text-white transition-colors text-sm"
-              >
-                FilterX
-              </button>
-            ) : (
-              <button
-                onClick={() => scrollToSection('pricing-section')}
-                className="text-gray-400 hover:text-white transition-colors text-sm text-left"
-              >
-                Pricing
-              </button>
-            )}
-          </div>
-          <div>
-            <button
-              onClick={() => scrollToSection('faq')}
-              className="text-gray-400 hover:text-white transition-colors text-sm text-left"
-            >
-              FAQ
-            </button>
-          </div>
-        </nav>
-      </div>
-            {/* Legal */}
-            <div>
-              <h3 className="text-xl font-semibold mb-4">Legal</h3>
-              <nav className="space-y-3">
-                <div>
-                  <Link
-                    href="/privacy"
-                    className="text-gray-400 hover:text-white transition-colors text-sm"
-                  >
-                    Privacy Policy
-                  </Link>
-                </div>
-                <div>
-                  <Link
-                    href="/terms"
-                    className="text-gray-400 hover:text-white transition-colors text-sm"
-                  >
-                    Terms of Service
-                  </Link>
-                </div>
-              </nav>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t border-gray-800 my-8" />
-
-          {/* Copyright */}
-          <div className="text-center text-gray-400 text-sm">
-            <p>&copy; {new Date().getFullYear()} FilterX. All rights reserved.</p>
           </div>
         </div>
-      </footer>
+
+        {/* Divider */}
+        <div className="border-t border-gray-800 my-8" />
+
+        {/* Copyright */}
+        <div className="text-center text-gray-400 text-sm">
+          <p>&copy; {new Date().getFullYear()} FilterX. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
     </div>
   )
 }

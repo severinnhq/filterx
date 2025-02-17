@@ -53,20 +53,14 @@ export default function Header() {
   }
 
   const renderNavigationItem = (text: string, sectionId: string) => {
-    if (text === "Pricing" && userStatus) {
-      const targetSection = userStatus === "preorder" 
-        ? "preorder-section" 
-        : userStatus === "basic" 
-        ? "basic-section" 
-        : sectionId;
-
+    if (text === "Pricing" && (userStatus === "preorder" || userStatus === "basic")) {
       return (
         <li>
           <button
-            onClick={() => scrollToSection(targetSection)}
+            onClick={() => scrollToSection("preorder-section")}
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
-            {userStatus ? "FilterX" : text}
+            FilterX
           </button>
         </li>
       )
@@ -85,19 +79,13 @@ export default function Header() {
   }
 
   const renderMobileNavigationItem = (text: string, sectionId: string) => {
-    if (text === "Pricing" && userStatus) {
-      const targetSection = userStatus === "preorder" 
-        ? "preorder-section" 
-        : userStatus === "basic" 
-        ? "basic-section" 
-        : sectionId;
-
+    if (text === "Pricing" && (userStatus === "preorder" || userStatus === "basic")) {
       return (
         <button
-          onClick={() => scrollToSection(targetSection)}
+          onClick={() => scrollToSection("preorder-section")}
           className="block px-3 py-2 text-base font-medium text-gray-600 hover:text-gray-900 transition-colors w-full text-left"
         >
-          {userStatus ? "FilterX" : text}
+          FilterX
         </button>
       )
     }
@@ -115,17 +103,15 @@ export default function Header() {
   return (
     <header className="fixed w-full bg-white shadow-sm z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center h-16">
+        <div className="flex justify-between items-center h-16">
           {/* Left section - Logo */}
-          <div className="w-1/4">
-            <Link href="/" className="flex items-center">
-              <Image src="/logo.png" alt="FilterX Logo" width={32} height={32} className="mr-2" />
-              <span className="text-2xl font-bold text-gray-900 font-geist">FilterX</span>
-            </Link>
-          </div>
+          <Link href="/" className="flex items-center">
+            <Image src="/logo.png" alt="FilterX Logo" width={32} height={32} className="mr-2" />
+            <span className="text-2xl font-bold text-gray-900 font-geist">FilterX</span>
+          </Link>
 
           {/* Center section - Navigation */}
-          <nav className="hidden md:flex flex-1 justify-center">
+          <nav className="hidden md:flex">
             <ul className="flex space-x-4">
               {renderNavigationItem("How it works?", "how-it-works")}
               {renderNavigationItem("Pricing", "pricing-section")}
@@ -134,8 +120,8 @@ export default function Header() {
           </nav>
 
           {/* Right section - Auth */}
-          <div className="w-1/4 flex justify-end">
-            <div className="hidden md:flex items-center justify-end">
+          <div className="flex items-center">
+            <div className="hidden md:flex items-center">
               {isLoggedIn ? (
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-600 truncate max-w-[150px]">{userEmail}</span>
@@ -150,7 +136,7 @@ export default function Header() {
                 </Button>
               )}
             </div>
-            <div className="md:hidden">
+            <div className="md:hidden ml-4">
               <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
                 {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
               </Button>
