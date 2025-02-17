@@ -637,56 +637,64 @@ export default function Page() {
             </h3>
 
             <div className="flex justify-center sm:justify-start">
-              <div className="w-full sm:w-[320px] md:w-[640px] lg:w-[760px] px-8 sm:px-6 md:px-0 space-y-6">
+              <div className="w-full max-w-[320px] xs:max-w-sm sm:max-w-md md:w-full px-2 sm:px-4 md:px-0 space-y-6">
                 {/* Text and Image Container */}
-                <div className="flex max-[400px]:flex-col flex-row items-start gap-6">
-                  <div className="w-full max-[400px]:w-full md:w-[60%]">
+                <div className="flex flex-row max-[400px]:flex-col max-[1215px]:flex-row min-[1024px]:flex-row items-center max-[400px]:items-center gap-5">
+                  <div className="w-[55%] max-[400px]:w-full max-[1215px]:w-[55%] min-[1024px]:w-[55%] text-left max-[400px]:text-center">
                     <p className="text-gray-400 whitespace-pre-line leading-tight text-sm md:text-sm lg:text-sm">
                       Watch me recreate<br />
-                      this with my<br />
-                      co-founder.
+                      this with my co-founder.
                     </p>
                   </div>
 
-                  <div className="w-full max-[400px]:w-full md:w-[40%] h-16">
-                    <div className="relative w-full h-full">
+                  <div className="w-[45%] max-[400px]:w-[80%] max-[1215px]:w-[45%] min-[1024px]:w-[45%] h-24 relative">
+                    <div style={{
+                      position: 'relative',
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '8px',
+                      overflow: 'hidden'
+                    }}>
                       <Image 
                         src="/lambo.png" 
                         alt="Lambo" 
                         fill
-                        className="rounded object-cover"
+                        style={{ 
+                          objectFit: 'contain',
+                          borderRadius: '8px' 
+                        }}
                         quality={100}
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        sizes="(max-width: 400px) 80vw, (max-width: 640px) 45vw, (max-width: 768px) 30vw, 20vw"
                       />
                     </div>
                   </div>
                 </div>
 
                 <form onSubmit={handleSubscribe} className="w-full space-y-2">
-  <input
-    type="email"
-    value={email}
-    onChange={(e) => setEmail(e.target.value)}
-    placeholder="Your email"
-    className="w-full px-4 py-3 rounded bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
-    required
-  />
-  <button
-    type="submit"
-    className="w-full px-4 py-3 bg-[#5c4ba3] hover:bg-[#4c3d8a] rounded text-white transition-colors text-sm"
-  >
-    Subscribe
-  </button>
-  {message && (
-    <div className={`text-sm ${
-      message.includes('Success') || message.includes('already subscribed') 
-        ? 'text-green-400' 
-        : 'text-red-400'
-    }`}>
-      {message}
-    </div>
-  )}
-</form>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Your email"
+                    className="w-full px-4 py-3 rounded bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="w-full px-4 py-3 bg-[#5c4ba3] hover:bg-[#4c3d8a] rounded text-white transition-colors text-sm"
+                  >
+                    Subscribe
+                  </button>
+                  {message && (
+                    <div className={`text-sm ${
+                      message.includes('Success') || message.includes('already subscribed') 
+                        ? 'text-green-400' 
+                        : 'text-red-400'
+                    }`}>
+                      {message}
+                    </div>
+                  )}
+                </form>
               </div>
             </div>
           </div>
