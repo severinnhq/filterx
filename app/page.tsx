@@ -6,7 +6,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Header from "../components/header"
 import { Button } from "@/components/ui/button"
-import { Check, Clock, Mail } from "lucide-react"
+import { Check, Clock, Mail  } from "lucide-react"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import PreorderSection from "@/components/preorder-section"
 import TweetDemo from "../components/TweetDemo"
@@ -572,6 +572,26 @@ export default function Page() {
                 className="text-sm hover:text-white transition-colors"
               >
                 filterxhq@gmail.com
+              </a>
+            </div>
+            <div className="flex items-center space-x-2 text-gray-400">
+              {/* X Logo */}
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg>
+              <a
+                href="https://x.com/severinnHQ"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm hover:text-white transition-colors"
+              >
+                @severinnHQ
               </a>
             </div>
           </div>
