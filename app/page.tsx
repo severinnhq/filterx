@@ -688,8 +688,8 @@ export default function Page() {
                   {message && (
                     <div className={`text-sm ${
                       message.includes('Success') || message.includes('already subscribed') 
-                        ? 'text-green-400' 
-                        : 'text-red-400'
+                        ? 'text-red-400' 
+                        : 'text-green-400'
                     }`}>
                       {message}
                     </div>

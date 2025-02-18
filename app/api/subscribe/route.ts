@@ -16,25 +16,26 @@ export async function POST(request: Request) {
     
     const { db } = await connectToDatabase()
     
-    // Check if email already exists in any project
+    // Check if email already exists in the emaillist
     const existingEmail = await db.collection('emaillist').findOne({ email })
     
     if (existingEmail) {
       return NextResponse.json(
-        { message: 'You\'re already subscribed! Thank you for your interest.' }, 
+        { message: "You're already subscribed! Maybe through one of my other projects..." }, 
         { status: 409 }
       )
     }
     
-    // Save new email subscription
+    // Save new email subscription with "newsletter" source and "filterx" project
     await db.collection('emaillist').insertOne({
       email,
-      source: 'filterx',
-      subscribedAt: new Date()
+      source: 'newsletter',
+      project: 'filterx',
+      subscribedAt: new Date(),
     })
     
     return NextResponse.json(
-      { message: 'You\'re subscribed!' }, 
+      { message: "You're subscribed!" }, 
       { status: 201 }
     )
     
